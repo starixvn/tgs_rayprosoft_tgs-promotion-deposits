@@ -1,4 +1,5 @@
-﻿using Tgs.Calculate.Clients;
+﻿using Isopoh.Cryptography.Blake2b;
+using Tgs.Calculate.Clients;
 using Tgs.Promotion.Clients;
 using Tgs.ServiceUtility;
 
@@ -24,7 +25,9 @@ internal class DistributeDepositBonusCommandService(
 			promotionId,
 			cancellationToken).ConfigureAwait(false);
 
-		if (rule is null || promotionMainInfo is null || promotionMainInfo.PromotionType is not DepositPromotionConsts.DepositRewardByConditionTypeName)
+		if (rule is null
+			|| promotionMainInfo is null
+			|| !DepositPromotionConsts.ImplementPromotionTypes.Contains(promotionMainInfo.PromotionType))
 			return;
 
 		var (bonusAmount, bucketAmount) = CalculateAmount(
