@@ -30,7 +30,7 @@ internal class DepositRewardByConditionFlowProcessor(
 			promotionInfo!.BrandId,
 			cancellationToken).ConfigureAwait(false);
 		var brandOffset = TimeSpan.FromMinutes(brandInfo!.TimeSpanMinutes ?? 480);
-		var currentDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().ToOffset(brandOffset).DateTime);
+		var currentDate = new DateTimeOffset(timeProvider.GetUtcNow().ToOffset(brandOffset).Date, brandOffset);
 
 		switch (action)
 		{

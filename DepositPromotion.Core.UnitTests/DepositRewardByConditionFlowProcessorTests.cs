@@ -48,7 +48,7 @@ public class DepositRewardByConditionFlowProcessorTests
         _ = fakeDepositByConditionCheckService.CheckAsync(
             Arg.Is(request.PromotionId.ToGuid()),
             Arg.Is(request.PlayerCode),
-            Arg.Any<DateOnly>())
+            Arg.Any<DateTimeOffset>())
             .Returns(true);
 
         // Act
@@ -105,7 +105,7 @@ public class DepositRewardByConditionFlowProcessorTests
         _ = fakeDepositByConditionCheckService.CheckAsync(
             Arg.Is(request.PromotionId.ToGuid()),
             Arg.Is(request.PlayerCode),
-            Arg.Is(DateOnly.Parse("2024-03-19")))
+            Arg.Is(DateTimeOffset.ParseExact("2024-03-19T00:00:00.0000000+02:00", "o", null)))
             .Returns(true);
 
         // Act
@@ -160,7 +160,7 @@ public class DepositRewardByConditionFlowProcessorTests
         _ = fakeDepositByConditionCheckService.CheckAsync(
             Arg.Is(request.PromotionId.ToGuid()),
             Arg.Is(request.PlayerCode),
-            Arg.Is(DateOnly.Parse("2024-03-19")))
+            Arg.Is(DateTimeOffset.ParseExact("2024-03-19T00:00:00.0000000+08:00", "o", null)))
             .Returns(true);
 
         // Act
@@ -210,7 +210,7 @@ public class DepositRewardByConditionFlowProcessorTests
         _ = fakeDepositByConditionCheckService.CheckAsync(
             Arg.Is(request.PromotionId.ToGuid()),
             Arg.Is(request.PlayerCode),
-            Arg.Any<DateOnly>())
+            Arg.Any<DateTimeOffset>())
             .Returns(true);
 
         // Act
@@ -221,7 +221,7 @@ public class DepositRewardByConditionFlowProcessorTests
             .TagDepositAsync(
                 Arg.Is(request.PromotionId.ToGuid()),
                 Arg.Is(request.PlayerCode),
-                Arg.Any<DateOnly>());
+                Arg.Any<DateTimeOffset>());
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class DepositRewardByConditionFlowProcessorTests
         _ = fakeDepositByConditionCheckService.CheckAsync(
             Arg.Is(request.PromotionId.ToGuid()),
             Arg.Is(request.PlayerCode),
-            Arg.Any<DateOnly>())
+            Arg.Any<DateTimeOffset>())
             .Returns(true);
 
         // Act
@@ -274,6 +274,6 @@ public class DepositRewardByConditionFlowProcessorTests
             .RollbackTagAsync(
                 Arg.Is(request.PromotionId.ToGuid()),
                 Arg.Is(request.PlayerCode),
-                Arg.Any<DateOnly>());
+                Arg.Any<DateTimeOffset>());
     }
 }
