@@ -12,6 +12,7 @@ internal class DepositRewardByConditionFlowProcessor(
 	IDepositRewardByConditionCheckService depositRewardByConditionCheckService,
 	TimeProvider timeProvider)
 	: IMessageProcessor<CheckPromotionRequest, ReadOnlyMemory<byte>>
+	, IMessageHandler<CheckPromotionRequest>
 {
 	private static readonly ReadOnlyMemory<byte> _EmptyResponse = Array.Empty<byte>();
 
@@ -66,4 +67,15 @@ internal class DepositRewardByConditionFlowProcessor(
 
 		return _EmptyResponse;
 	}
+
+	async ValueTask IMessageHandler<CheckPromotionRequest>.HandleAsync(
+		string subject,
+		CheckPromotionRequest data,
+		IEnumerable<MessageHeaderValue>? headerValues,
+		CancellationToken cancellationToken)
+		=> await HandleAsync(
+			subject,
+			data,
+			headerValues,
+			cancellationToken).ConfigureAwait(false);
 }

@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using Tgs.MessageQueue.Nats.Serializers;
+using Tgs.Promotion;
 using Tgs.Promotion.Deposits;
 using Tgs.Promotion.Deposits.MessageQueue;
 
@@ -31,6 +32,7 @@ var builder = WebApplication.CreateBuilder(args);
 		});
 
 	builder.Services
+		.AddSingleton(TimeProvider.System)
 		.AddKeyedSingleton<IConnectionMultiplexer>(
 			"Redis",
 			(sp, _) => ConnectionMultiplexer.Connect(
@@ -48,6 +50,8 @@ var builder = WebApplication.CreateBuilder(args);
 		.AddCalculateClient(httpBuilder => httpBuilder
 			.ConfigureHttpClient(httpClient => httpClient.BaseAddress =
 				builder.Configuration.GetValue<Uri>("PromotionDeposits:CalculateServiceBaseUrl")!))
+		.AddBrandServiceClient((opts, _) => opts.BrandCertificateBaseUrl =
+			builder.Configuration.GetValue<Uri>("PromotionDeposits:BrandCertificationBaseUrl")!)
 		.AddPromotionDeposits()
 		.AddPromotionDepositsRepositories(
 			dbBuilder => dbBuilder
@@ -68,7 +72,36 @@ var builder = WebApplication.CreateBuilder(args);
 			.AddProcessor(
 				ProcessorTypes.DepositRewardByConditionSettingProcessorType,
 				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting",
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting"))
+				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting")
+			.AddProcessor(
+				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+				string.Format(
+					PromotionCheckConsts.CheckSubjectTemplate,
+					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.check")
+			.AddReplyHandler(
+				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+				string.Format(
+					PromotionCheckConsts.TagSubjectTemplate,
+					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.tag")
+			.AddReplyHandler(
+				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+				string.Format(
+					PromotionCheckConsts.CommitSubjectTemplate,
+					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.commit")
+			.AddReplyHandler(
+				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+				string.Format(
+					PromotionCheckConsts.RollbackSubjectTemplate,
+					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.rollback")
+			.AddHandler(
+				ProcessorTypes.DepositFormStatusChangedHandlerType,
+				"tgs.payment.deposit.status_ex",
+				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.deposit")
+)
 		.AddNatsGlobPatternExchange("*");
 
 	var instrumentationExtenionFilters = new[] { "html", "ico", "png", "jpg" };
