@@ -13,11 +13,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "方案項目", "方案項�
 		nuget.config = nuget.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DepositPromotion.Core.UnitTests", "DepositPromotion.Core.UnitTests\DepositPromotion.Core.UnitTests.csproj", "{E42D8327-B404-426B-86AA-0CABAACD9BB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DepositPromotion.Core.UnitTests", "DepositPromotion.Core.UnitTests\DepositPromotion.Core.UnitTests.csproj", "{E42D8327-B404-426B-86AA-0CABAACD9BB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DepositPromotion.Repositories", "DepositPromotion.Repositories\DepositPromotion.Repositories.csproj", "{FCB3E304-A4C6-4E72-87E3-5B6D367B54CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DepositPromotion.Repositories", "DepositPromotion.Repositories\DepositPromotion.Repositories.csproj", "{FCB3E304-A4C6-4E72-87E3-5B6D367B54CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DepositPromotion.Repositories.UnitTests", "DepositPromotion.Repositories.UnitTests\DepositPromotion.Repositories.UnitTests.csproj", "{28849065-458A-4F5F-8ED6-48FDA001BDC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DepositPromotion.Repositories.UnitTests", "DepositPromotion.Repositories.UnitTests\DepositPromotion.Repositories.UnitTests.csproj", "{28849065-458A-4F5F-8ED6-48FDA001BDC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tgs.Promotion.Deposits.IntegrationTests", "Tgs.Promotion.Deposits.IntegrationTests\Tgs.Promotion.Deposits.IntegrationTests.csproj", "{2533EECD-8C65-476D-89DB-91444EDDB01F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{28849065-458A-4F5F-8ED6-48FDA001BDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28849065-458A-4F5F-8ED6-48FDA001BDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28849065-458A-4F5F-8ED6-48FDA001BDC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2533EECD-8C65-476D-89DB-91444EDDB01F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2533EECD-8C65-476D-89DB-91444EDDB01F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2533EECD-8C65-476D-89DB-91444EDDB01F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2533EECD-8C65-476D-89DB-91444EDDB01F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
