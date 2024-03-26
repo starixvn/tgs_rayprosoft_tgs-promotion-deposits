@@ -3,6 +3,7 @@ using ExpectedObjects;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 using Tgs.BrandCertificate.Clients;
 using Tgs.Calculate.Clients;
 using Tgs.Promotion.Clients;
@@ -89,6 +90,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
         var fakeTimeProvider = Substitute.For<TimeProvider>();
+        var fakeRedisDatabase = Substitute.For<IDatabase>();
 
         await using var web = PromotionDepositsTestApplication.Instance
             .WithWebHostBuilder(hostBuilder => hostBuilder
@@ -97,6 +99,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakePromotionServiceClient)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
+                    .AddKeyedSingleton("Redis", fakeRedisDatabase)
                     .AddMessageQueue()
                     .AddDirectMessageQueue(directConfiguration => directConfiguration
                         .AddProcessor(
@@ -327,6 +330,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
         var fakeTimeProvider = Substitute.For<TimeProvider>();
+        var fakeCheckService = Substitute.For<IDepositRewardByConditionCheckService>();
 
         await using var web = PromotionDepositsTestApplication.Instance
             .WithWebHostBuilder(hostBuilder => hostBuilder
@@ -335,6 +339,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakePromotionServiceClient)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
+                    .AddSingleton(fakeCheckService)
                     .AddMessageQueue()
                     .AddDirectMessageQueue(directConfiguration => directConfiguration
                         .AddHandler(
