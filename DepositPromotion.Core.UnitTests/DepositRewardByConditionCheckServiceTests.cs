@@ -268,6 +268,182 @@ public class DepositRewardByConditionCheckServiceTests
     }
 
     [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_總計次數查詢會先查詢FirstLevelRepository()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            null,
+            null,
+            null,
+            1);
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakeFirstLevelRepository.GetPlayerDepositByConditionTotalCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode))
+            .Returns(new DepositCountInfo(date.UtcDateTime, 1));
+        _ = fakeTgsRepository.GetDepositCountInfoAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(date.UtcDateTime))
+            .Returns(new DepositCountInfo(date.UtcDateTime, 1));
+
+        _ = fakeFirstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(DateOnly.Parse("2024-03-25")))
+            .Returns(1);
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.False(actual);
+
+        _ = fakeTgsRepository.DidNotReceive()
+            .GetDepositCountInfoAsync(
+                Arg.Is(promotionId),
+                Arg.Is(playerCode),
+                Arg.Is(date.UtcDateTime));
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_總計次數查詢查到的FirstLevel資料過時會去查DB更新資料()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            null,
+            null,
+            null,
+            1);
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakeFirstLevelRepository.GetPlayerDepositByConditionTotalCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode))
+            .Returns(new DepositCountInfo(date.UtcDateTime.AddDays(-1D), 0));
+        _ = fakeTgsRepository.GetDepositCountInfoAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(date.UtcDateTime))
+            .Returns(new DepositCountInfo(date.UtcDateTime, 1));
+
+        _ = fakeFirstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(DateOnly.Parse("2024-03-25")))
+            .Returns(1);
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.False(actual);
+        _ = fakeFirstLevelRepository.Received(1)
+            .SetPlayerDepositByConditionTotalCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(DateOnly.Parse("2024-03-25")),
+            Arg.Any<DepositCountInfo>());
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_總計次數查詢查不到FirstLevel資料過時會去查DB更新資料()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            null,
+            null,
+            null,
+            1);
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakeTgsRepository.GetDepositCountInfoAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(date.UtcDateTime))
+            .Returns(new DepositCountInfo(date.UtcDateTime, 1));
+
+        _ = fakeFirstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(DateOnly.Parse("2024-03-25")))
+            .Returns(1);
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.False(actual);
+        _ = fakeFirstLevelRepository.Received(1)
+            .SetPlayerDepositByConditionTotalCountAsync(
+            Arg.Is(promotionId),
+            Arg.Is(playerCode),
+            Arg.Is(DateOnly.Parse("2024-03-25")),
+            Arg.Any<DepositCountInfo>());
+    }
+
+    [Fact]
     public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_需要通過所有設定的檢查才會回傳True()
     {
         // Arrange

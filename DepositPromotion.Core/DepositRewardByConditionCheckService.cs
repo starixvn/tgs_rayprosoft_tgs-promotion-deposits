@@ -21,16 +21,18 @@ internal class DepositRewardByConditionCheckService(
 		if (promotionSettings is null)
 			return false;
 
+		var processDateOnly = DateOnly.FromDateTime(date.DateTime);
+
 		await firstLevelRepository.IncrementPlayerDepositByConditionAsync(
 			promotionId,
 			playerCode,
-			DateOnly.FromDateTime(date.DateTime),
+			processDateOnly,
 			cancellationToken).ConfigureAwait(false);
 
 		var dailyCount = await firstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
 			promotionId,
 			playerCode,
-			DateOnly.FromDateTime(date.DateTime),
+			processDateOnly,
 			cancellationToken).ConfigureAwait(false);
 
 		if (promotionSettings.DailyDepositLimitByPlayer is not null)
@@ -44,7 +46,7 @@ internal class DepositRewardByConditionCheckService(
 			var weeklyCount = await firstLevelRepository.GetPlayerDepositByConditionWeeklyCountAsync(
 				promotionId,
 				playerCode,
-				DateOnly.FromDateTime(date.DateTime),
+				processDateOnly,
 				cancellationToken).ConfigureAwait(false);
 
 			if (promotionSettings.WeeklyDepositLimitByPlayer < weeklyCount + dailyCount)
@@ -56,7 +58,7 @@ internal class DepositRewardByConditionCheckService(
 			var monthlyCount = await firstLevelRepository.GetPlayerDepositByConditionMonthlyCountAsync(
 				promotionId,
 				playerCode,
-				DateOnly.FromDateTime(date.DateTime),
+				processDateOnly,
 				cancellationToken).ConfigureAwait(false);
 
 			if (promotionSettings.MonthlyDepositLimitByPlayer < monthlyCount + dailyCount)
@@ -65,13 +67,28 @@ internal class DepositRewardByConditionCheckService(
 
 		if (promotionSettings.TotalDepositLimitByPlayer is not null)
 		{
-			var dbCount = await tgsRepository.GetDepositCountInfoAsync(
+			var totalCountInfo = await firstLevelRepository.GetPlayerDepositByConditionTotalCountAsync(
 				promotionId,
 				playerCode,
-				date.UtcDateTime,
 				cancellationToken).ConfigureAwait(false);
 
-			if (promotionSettings.TotalDepositLimitByPlayer < dbCount.Count + dailyCount)
+			if (totalCountInfo is null || totalCountInfo.Processed < date.UtcDateTime)
+			{
+				totalCountInfo = await tgsRepository.GetDepositCountInfoAsync(
+					promotionId,
+					playerCode,
+					date.UtcDateTime,
+					cancellationToken).ConfigureAwait(false);
+
+				await firstLevelRepository.SetPlayerDepositByConditionTotalCountAsync(
+					promotionId,
+					playerCode,
+					processDateOnly,
+					totalCountInfo,
+					cancellationToken).ConfigureAwait(false);
+			}
+
+			if (promotionSettings.TotalDepositLimitByPlayer < totalCountInfo.Count + dailyCount)
 				return false;
 		}
 

@@ -1,5 +1,7 @@
-﻿using StackExchange.Redis;
+﻿using System;
+using StackExchange.Redis;
 using Tgs.Promotion.Deposits.Repositories;
+using Xunit;
 
 namespace DepositPromotion.Repositories.UnitTests;
 
@@ -23,6 +25,27 @@ public class RedisFirstLevelRepositoryTests
 
         // Act
         _ = await sut.GetPlayerDepositByConditionDailyCountAsync(promotionId, playerCode, date);
+
+        // Assert
+        _ = fakeRedisDatabase.Received(1)
+            .StringGetAsync(Arg.Is(expectedKey));
+    }
+
+    [Fact]
+    public async Task RedisFirstLevelRepository_取得玩家儲值送活動總次數()
+    {
+        // Arrange
+        var fakeRedisDatabase = Substitute.For<IDatabase>();
+
+        var sut = new RedisFirstLevelRepository(fakeRedisDatabase);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+
+        var expectedKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Total");
+
+        // Act
+        _ = await sut.GetPlayerDepositByConditionTotalCountAsync(promotionId, playerCode);
 
         // Assert
         _ = fakeRedisDatabase.Received(1)

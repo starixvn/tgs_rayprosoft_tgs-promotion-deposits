@@ -61,11 +61,13 @@ internal class RedisFirstLevelRepository(
 			  dataKey).ConfigureAwait(false);
 
 		if (result < 0L)
+		{
 			await IncrementPlayerDepositByConditionAsync(
 				promotionId,
 				playerCode,
 				date,
 				cancellationToken).ConfigureAwait(false);
+		}
 	}
 
 	public async ValueTask<long?> GetPlayerDepositByConditionMonthlyCountAsync(
@@ -82,8 +84,10 @@ internal class RedisFirstLevelRepository(
 		var result = new DepositCountSnapshot(0L, DateOnly.MinValue);
 
 		if (json.HasValue)
+		{
 			result = JsonSerializer.Deserialize<DepositCountSnapshot>((string)json!)
 				?? new DepositCountSnapshot(0L, DateOnly.MinValue);
+		}
 
 		if (result.SnapshotDate < date.AddDays(-1))
 		{
@@ -132,8 +136,10 @@ internal class RedisFirstLevelRepository(
 		var result = new DepositCountSnapshot(0L, DateOnly.MinValue);
 
 		if (json.HasValue)
+		{
 			result = JsonSerializer.Deserialize<DepositCountSnapshot>((string)json!)
 				?? new DepositCountSnapshot(0L, DateOnly.MinValue);
+		}
 
 		if (result.SnapshotDate < date.AddDays(-1))
 		{
@@ -166,5 +172,36 @@ internal class RedisFirstLevelRepository(
 		}
 
 		return result.Count;
+	}
+
+	public async ValueTask<DepositCountInfo?> GetPlayerDepositByConditionTotalCountAsync(
+		Guid promotionId,
+		string playerCode,
+		CancellationToken cancellationToken = default)
+	{
+		var dataKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Total");
+
+		var result = await redisDatabase.StringGetAsync(
+			dataKey).ConfigureAwait(false);
+
+		return result.HasValue
+			? JsonSerializer.Deserialize<DepositCountInfo>((string)result!, PromotionUtility.SerializerOptions)
+			: null;
+	}
+
+	public async ValueTask SetPlayerDepositByConditionTotalCountAsync(
+		Guid promotionId,
+		string playerCode,
+		DateOnly date,
+		DepositCountInfo countInfo,
+		CancellationToken cancellationToken = default)
+	{
+		var dataKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Total");
+		var expireDate = date.CeilingMonthDay().AddDays(1).ToDateTime(TimeOnly.MinValue);
+
+		_ = await redisDatabase.StringSetAsync(
+			dataKey,
+			JsonSerializer.Serialize(countInfo, PromotionUtility.SerializerOptions),
+			expiry: expireDate - date.ToDateTime(TimeOnly.MinValue)).ConfigureAwait(false);
 	}
 }
