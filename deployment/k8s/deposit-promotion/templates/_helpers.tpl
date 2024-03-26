@@ -48,7 +48,7 @@ Selector labels
 {{- define "deposit-promotion.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "deposit-promotion.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-tgs.king: promotion
+tgs.kind: promotion
 {{- end }}
 
 {{/*
