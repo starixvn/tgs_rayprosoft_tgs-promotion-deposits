@@ -1,11 +1,13 @@
-﻿using Tgs.Promotion.Clients;
+﻿using Tgs.PlayerService.Client;
+using Tgs.Promotion.Clients;
 
 namespace Tgs.Promotion.Deposits;
 
 internal class DepositRewardByConditionCheckService(
 	IFirstLevelRepository firstLevelRepository,
 	IPromotionServiceClient promotionServiceClient,
-	ITgsRepository tgsRepository)
+	ITgsRepository tgsRepository,
+	IPlayerServiceClient playerServiceClient)
 	: IDepositRewardByConditionCheckService
 {
 	public async ValueTask<bool> CheckAsync(
@@ -20,6 +22,44 @@ internal class DepositRewardByConditionCheckService(
 
 		if (promotionSettings is null)
 			return false;
+
+		if (promotionSettings.PlayerConditions is not null)
+		{
+			var playerInfo = await playerServiceClient.GetPlayerInfoAsync(
+			playerCode,
+			cancellationToken).ConfigureAwait(false);
+
+			if (playerInfo is null)
+				return false;
+
+			var playerProps = await playerServiceClient.GetPlayerPropertiesAsync(
+				playerCode,
+				cancellationToken).ConfigureAwait(false);
+
+			if (promotionSettings.PlayerConditions.Any(propName => propName == "RealName"))
+			{
+				var realName = playerProps?["RealName"];
+
+				if (string.IsNullOrWhiteSpace(realName))
+					return false;
+			}
+
+			if (promotionSettings.PlayerConditions.Any(propName => propName == "Birthdate"))
+			{
+				var birthdate = playerProps?["Birthdate"];
+
+				if (string.IsNullOrWhiteSpace(birthdate))
+					return false;
+			}
+
+			if (promotionSettings.PlayerConditions.Any(propName => propName == "Phone"))
+			{
+				var phone = playerProps?["Phone"];
+
+				if (string.IsNullOrWhiteSpace(phone))
+					return false;
+			}
+		}
 
 		var processDateOnly = DateOnly.FromDateTime(date.DateTime);
 

@@ -13,7 +13,8 @@ data:
         "PromotionServiceBaseUrl": "http://promotion-api",
         "PaymentServiceBaseUrl": "http://payment-api",
         "CalculateServiceBaseUrl": "http://tgs-calculate-api",
-        "BrandCertificationBaseUrl": "http://brand-cert-api"
+        "BrandCertificationBaseUrl": "http://brand-cert-api",
+        "PlayerServiceBaseUrl": "http://player-api"
       }
     }
   otel-collector-config.yaml: |

@@ -45,7 +45,8 @@ internal class DepositRewardByConditionSettingProcessor(
 
 		settings = settings with
 		{
-			BucketTypes = settings.BucketTypes?.Where(v => !string.IsNullOrWhiteSpace(v)).ToArray()
+			BucketTypes = settings.BucketTypes?.Where(v => !string.IsNullOrWhiteSpace(v)).ToArray(),
+			PlayerConditions = settings.PlayerConditions?.Where(v => !string.IsNullOrWhiteSpace(v)).ToArray()
 		};
 
 		var response = new CampaignDetailResponse

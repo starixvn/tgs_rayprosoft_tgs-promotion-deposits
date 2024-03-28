@@ -52,6 +52,8 @@ var builder = WebApplication.CreateBuilder(args);
 				builder.Configuration.GetValue<Uri>("PromotionDeposits:CalculateServiceBaseUrl")!))
 		.AddBrandServiceClient((opts, _) => opts.BrandCertificateBaseUrl =
 			builder.Configuration.GetValue<Uri>("PromotionDeposits:BrandCertificationBaseUrl")!)
+		.AddPlayerServiceClient((opts, _) => opts.BaseUrl =
+			builder.Configuration.GetValue<Uri>("PromotionDeposits:PlayerServiceBaseUrl")!)
 		.AddPromotionDeposits()
 		.AddPromotionDepositsRepositories(
 			dbBuilder => dbBuilder

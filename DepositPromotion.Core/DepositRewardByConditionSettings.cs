@@ -5,6 +5,7 @@ public record DepositRewardByConditionSettings(
 	decimal TurnoverMultiple,
 	int[] VipLevels,
 	string[]? BucketTypes,
+	string[]? PlayerConditions,
 	int? DailyDepositLimitByPlayer,
 	int? WeeklyDepositLimitByPlayer,
 	int? MonthlyDepositLimitByPlayer,

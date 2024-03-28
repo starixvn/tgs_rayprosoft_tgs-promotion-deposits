@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Immutable;
+using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Deposits;
 using Xunit;
@@ -18,15 +15,23 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
         var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -42,11 +47,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -61,7 +68,14 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             null,
             null,
+            null,
             null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
 
         _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
             .Returns(settings);
@@ -80,11 +94,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -95,6 +111,7 @@ public class DepositRewardByConditionCheckServiceTests
             1M,
             10M,
             [],
+            null,
             null,
             1,
             null,
@@ -124,11 +141,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -139,6 +158,7 @@ public class DepositRewardByConditionCheckServiceTests
             1M,
             10M,
             [],
+            null,
             null,
             null,
             1,
@@ -174,11 +194,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -189,6 +211,7 @@ public class DepositRewardByConditionCheckServiceTests
             1M,
             10M,
             [],
+            null,
             null,
             null,
             null,
@@ -224,11 +247,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -239,6 +264,7 @@ public class DepositRewardByConditionCheckServiceTests
             1M,
             10M,
             [],
+            null,
             null,
             null,
             null,
@@ -274,11 +300,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -289,6 +317,7 @@ public class DepositRewardByConditionCheckServiceTests
             1M,
             10M,
             [],
+            null,
             null,
             null,
             null,
@@ -334,11 +363,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -353,7 +384,14 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             null,
             null,
+            null,
             1);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
 
         _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
             .Returns(settings);
@@ -394,11 +432,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -413,7 +453,14 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             null,
             null,
+            null,
             1);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
 
         _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
             .Returns(settings);
@@ -450,11 +497,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -466,10 +515,17 @@ public class DepositRewardByConditionCheckServiceTests
             10M,
             [],
             null,
+            null,
             2,
             2,
             2,
             2);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
 
         _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
             .Returns(settings);
@@ -512,11 +568,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -540,11 +598,13 @@ public class DepositRewardByConditionCheckServiceTests
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
-            fakeTgsRepository);
+            fakeTgsRepository,
+            fakePlayerServiceClient);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -559,5 +619,262 @@ public class DepositRewardByConditionCheckServiceTests
                 Arg.Is(promotionId),
                 Arg.Is(playerCode),
                 Arg.Is(DateOnly.Parse("2024-03-25")));
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果查不到玩家資料回傳False()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            ["RealName"],
+            null,
+            null,
+            null,
+            null);
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.False(actual);
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_查詢玩家資料RealName是否有設定()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            ["RealName"],
+            null,
+            null,
+            null,
+            null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
+            .Returns(new Dictionary<string, string>
+            {
+                ["RealName"] = "測試者"
+            }.ToImmutableDictionary());
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_查詢玩家資料Phone是否有設定()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            ["Phone"],
+            null,
+            null,
+            null,
+            null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
+            .Returns(new Dictionary<string, string>
+            {
+                ["AreaCode"] = "111",
+                ["Phone"] = "1234567"
+            }.ToImmutableDictionary());
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_查詢玩家資料Birthdate是否有設定()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            ["Birthdate"],
+            null,
+            null,
+            null,
+            null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
+            .Returns(new Dictionary<string, string>
+            {
+                ["Birthdate"] = "2024-03-28"
+            }.ToImmutableDictionary());
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_查詢玩家資料的條件要全部通過才行()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            ["RealName", "Phone", "Birthdate"],
+            null,
+            null,
+            null,
+            null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
+            .Returns(settings);
+
+        _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
+            .Returns(new Dictionary<string, string>
+            {
+                ["RealName"] = "測試者",
+                ["AreaCode"] = "111",
+                ["Phone"] = "1234567",
+                ["Birthdate"] = "2024-03-28"
+            }.ToImmutableDictionary());
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.True(actual);
     }
 }

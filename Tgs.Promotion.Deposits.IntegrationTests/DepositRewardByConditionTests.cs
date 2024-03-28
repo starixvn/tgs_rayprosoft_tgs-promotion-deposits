@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using Tgs.BrandCertificate.Clients;
 using Tgs.Calculate.Clients;
+using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Clients.Protos;
 using Tgs.Promotion.Deposits.MessageQueue;
 using Valhalla.MessageQueue;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Tgs.Promotion.Deposits.IntegrationTests;
@@ -46,6 +46,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
             3M,
             [],
             null,
+            ["RealName", "Birthdate"],
             4,
             5,
             6,
@@ -60,6 +61,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                 "bonusAmountLimit": 2,
                 "turnoverMultiple": 3,
                 "vipLevels": [],
+                "playerConditions": ["RealName", "Birthdate"],
                 "dailyDepositLimitByPlayer": 4,
                 "weeklyDepositLimitByPlayer": 5,
                 "monthlyDepositLimitByPlayer": 6,
@@ -91,6 +93,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         var fakeBrandServiceClient = Substitute.For<IBrandServiceClient>();
         var fakeTimeProvider = Substitute.For<TimeProvider>();
         var fakeRedisDatabase = Substitute.For<IDatabase>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
 
         await using var web = PromotionDepositsTestApplication.Instance
             .WithWebHostBuilder(hostBuilder => hostBuilder
@@ -99,6 +102,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakePromotionServiceClient)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
+                    .AddSingleton(fakePlayerServiceClient)
                     .AddKeyedSingleton("Redis", fakeRedisDatabase)
                     .AddMessageQueue()
                     .AddDirectMessageQueue(directConfiguration => directConfiguration
@@ -122,6 +126,14 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
             PromotionId = promotionId,
             PlayerCode = "test1"
         };
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(
+            Arg.Is(request.PlayerCode),
+            Arg.Any<CancellationToken>())
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = request.PlayerCode
+            });
 
         _ = fakePromotionServiceClient.GetPromotionMainInfoAsync(
             Arg.Is(promotionId),
@@ -152,6 +164,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                 2,
                 3,
                 [],
+                null,
                 null,
                 null,
                 null,
