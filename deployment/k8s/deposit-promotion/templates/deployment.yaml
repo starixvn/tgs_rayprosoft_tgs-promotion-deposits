@@ -37,9 +37,7 @@ spec:
             - name: OTEL_SERVICE_NAME
               value: Promotion-Deposits({{ .Release.Namespace }})
             - name: NODE_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
+              value: fluent-bit.logging
             - name: ConnectionStrings__Tgs
               valueFrom:
                 secretKeyRef:
