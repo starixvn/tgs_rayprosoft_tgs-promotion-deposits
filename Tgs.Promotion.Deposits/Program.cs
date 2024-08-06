@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using Npgsql;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -108,6 +109,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 	var instrumentationExtenionFilters = new[] { "html", "ico", "png", "jpg" };
 	_ = builder.Services
+		.AddProfileViewer()
 		.AddHealthChecks()
 		.Services
 		.AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
@@ -130,25 +132,23 @@ var builder = WebApplication.CreateBuilder(args);
 			.AddSource("Tgs.*")
 			.AddSource("TGS.*")
 			.AddSource("Valhalla.*")
-			.AddAspNetCoreInstrumentation(options => options.Filter =
-				httpContext => !httpContext.Request.Path.HasValue
-					|| !httpContext.Request.Path.StartsWithSegments("/swagger")
-					&& !httpContext.Request.Path.StartsWithSegments("/healthz")
-					&& !httpContext.Request.Path.StartsWithSegments("/metrics")
-					&& !httpContext.Request.Path.StartsWithSegments("/profiler/")
-					&& !instrumentationExtenionFilters.Any(
-						ext => httpContext.Request.Path.Value.EndsWith($".{ext}")))
+			.AddAspNetCoreInstrumentation()			
 			.AddNpgsql()
 			.AddProfileViewExporter()
 			.AddOtlpExporter())
-		.WithMetrics(meterBuiler => meterBuiler
-			.SetResourceBuilder(ResourceBuilder.CreateDefault()
-				.AddEnvironmentVariableDetector())
+		.WithMetrics(meterBuiler => meterBuiler			
 			.AddRuntimeInstrumentation()
 			.AddAspNetCoreInstrumentation()
 			.AddOtlpExporter())
 		.Services
-		.AddProfileViewer();
+		.Configure<AspNetCoreTraceInstrumentationOptions>(options => options.Filter =
+			httpContext => !httpContext.Request.Path.HasValue
+				|| !httpContext.Request.Path.StartsWithSegments("/swagger")
+				&& !httpContext.Request.Path.StartsWithSegments("/healthz")
+				&& !httpContext.Request.Path.StartsWithSegments("/metrics")
+				&& !httpContext.Request.Path.StartsWithSegments("/profiler/")
+				&& !new[] { "html", "ico", "png", "jpg" }.Any(
+					ext => httpContext.Request.Path.Value.EndsWith($".{ext}")));
 }
 
 var app = builder.Build();
