@@ -1,7 +1,9 @@
 ﻿using System.Collections.Immutable;
+using Microsoft.Extensions.Logging.Abstractions;
 using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Deposits;
+using Tgs.Promotion.Deposits.MessageQueue;
 using Xunit;
 
 namespace DepositPromotion.Core.UnitTests;
@@ -16,12 +18,14 @@ public class DepositRewardByConditionCheckServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+        
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -53,7 +57,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -100,7 +105,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -147,7 +153,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -200,7 +207,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -253,7 +261,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -306,7 +315,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -369,7 +379,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -438,7 +449,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -503,7 +515,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -574,7 +587,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -604,7 +618,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -634,7 +649,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -675,7 +691,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -728,7 +745,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -782,7 +800,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
@@ -835,7 +854,8 @@ public class DepositRewardByConditionCheckServiceTests
             fakeFirstLevelRepository,
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakePlayerServiceClient);
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
 
         var promotionId = Guid.NewGuid();
         var playerCode = "test1";
