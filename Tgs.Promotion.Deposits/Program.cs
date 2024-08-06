@@ -1,4 +1,5 @@
 ﻿using FluentdForward.OpenTelemetry.MessagePack;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NATS.Client.Core;
@@ -110,6 +111,13 @@ var builder = WebApplication.CreateBuilder(args);
 	var instrumentationExtenionFilters = new[] { "html", "ico", "png", "jpg" };
 	_ = builder.Services
 		.AddProfileViewer()
+		.AddHttpLogging(logging =>
+		{
+			logging.LoggingFields = HttpLoggingFields.All;
+			logging.MediaTypeOptions.AddText("application/x-www-form-urlencoded");
+			logging.MediaTypeOptions.AddText("text/html");
+			logging.MediaTypeOptions.AddText("multipart/form-data");
+		})
 		.AddHealthChecks()
 		.Services
 		.AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
@@ -134,6 +142,7 @@ var builder = WebApplication.CreateBuilder(args);
 			.AddSource("Valhalla.*")
 			.AddAspNetCoreInstrumentation()			
 			.AddNpgsql()
+			.AddHttpClientInstrumentation()
 			.AddProfileViewExporter()
 			.AddOtlpExporter())
 		.WithMetrics(meterBuiler => meterBuiler			
