@@ -1,4 +1,5 @@
-﻿using Tgs.PlayerService.Client;
+﻿using Microsoft.Extensions.Logging;
+using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 
 namespace Tgs.Promotion.Deposits;
@@ -7,7 +8,8 @@ internal class DepositRewardByConditionCheckService(
 	IFirstLevelRepository firstLevelRepository,
 	IPromotionServiceClient promotionServiceClient,
 	ITgsRepository tgsRepository,
-	IPlayerServiceClient playerServiceClient)
+	IPlayerServiceClient playerServiceClient,
+	ILogger<DepositRewardByConditionCheckService> logger)
 	: IDepositRewardByConditionCheckService
 {
 	public async ValueTask<bool> CheckAsync(
@@ -23,11 +25,13 @@ internal class DepositRewardByConditionCheckService(
 		if (promotionSettings is null)
 			return false;
 
+		logger.LogInformation("PromotionId:{promotionId}, PromotionSettings.PlayerConditions:{PlayerConditions}.", promotionId, promotionSettings.PlayerConditions);
+
 		if (promotionSettings.PlayerConditions is not null)
 		{
 			var playerInfo = await playerServiceClient.GetPlayerInfoAsync(
-			playerCode,
-			cancellationToken).ConfigureAwait(false);
+				playerCode,
+				cancellationToken).ConfigureAwait(false);
 
 			if (playerInfo is null)
 				return false;
@@ -40,6 +44,8 @@ internal class DepositRewardByConditionCheckService(
 			{
 				var realName = playerProps?["RealName"];
 
+				logger.LogInformation("PlayerCode:{playerCode}, RealName:{realName}.", playerCode, realName);
+
 				if (string.IsNullOrWhiteSpace(realName))
 					return false;
 			}
@@ -48,6 +54,8 @@ internal class DepositRewardByConditionCheckService(
 			{
 				var birthdate = playerProps?["Birthdate"];
 
+				logger.LogInformation("PlayerCode:{playerCode}, Birthdate:{birthdate}.", playerCode, birthdate);
+
 				if (string.IsNullOrWhiteSpace(birthdate))
 					return false;
 			}
@@ -55,6 +63,8 @@ internal class DepositRewardByConditionCheckService(
 			if (promotionSettings.PlayerConditions.Any(propName => propName == "Phone"))
 			{
 				var phone = playerProps?["Phone"];
+
+				logger.LogInformation("PlayerCode:{playerCode}, Phone:{phone}.", playerCode, phone);
 
 				if (string.IsNullOrWhiteSpace(phone))
 					return false;
@@ -78,7 +88,10 @@ internal class DepositRewardByConditionCheckService(
 		if (promotionSettings.DailyDepositLimitByPlayer is not null)
 		{
 			if (promotionSettings.DailyDepositLimitByPlayer < dailyCount)
+			{
+				logger.LogInformation("PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, DailyDepositLimitByPlayer:{DailyDepositLimitByPlayer}, DailyCount:{dailyCount}.", playerCode, processDateOnly, promotionSettings.DailyDepositLimitByPlayer, dailyCount);
 				return false;
+			}
 		}
 
 		if (promotionSettings.WeeklyDepositLimitByPlayer is not null)
@@ -90,7 +103,10 @@ internal class DepositRewardByConditionCheckService(
 				cancellationToken).ConfigureAwait(false);
 
 			if (promotionSettings.WeeklyDepositLimitByPlayer < weeklyCount + dailyCount)
+			{
+				logger.LogInformation("PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, WeeklyDepositLimitByPlayer:{WeeklyDepositLimitByPlayer}, WeeklyCount:{weeklyCount}, DailyCount:{dailyCount}.", playerCode, processDateOnly, promotionSettings.WeeklyDepositLimitByPlayer, weeklyCount, dailyCount);
 				return false;
+			}
 		}
 
 		if (promotionSettings.MonthlyDepositLimitByPlayer is not null)
@@ -102,7 +118,10 @@ internal class DepositRewardByConditionCheckService(
 				cancellationToken).ConfigureAwait(false);
 
 			if (promotionSettings.MonthlyDepositLimitByPlayer < monthlyCount + dailyCount)
+			{
+				logger.LogInformation("PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, MonthlyDepositLimitByPlayer:{MonthlyDepositLimitByPlayer}, MonthlyCount:{monthlyCount}, DailyCount:{dailyCount}.", playerCode, processDateOnly, promotionSettings.MonthlyDepositLimitByPlayer, monthlyCount, dailyCount);
 				return false;
+			}
 		}
 
 		if (promotionSettings.TotalDepositLimitByPlayer is not null)
@@ -129,7 +148,10 @@ internal class DepositRewardByConditionCheckService(
 			}
 
 			if (promotionSettings.TotalDepositLimitByPlayer < totalCountInfo.Count + dailyCount)
+			{
+				logger.LogInformation("PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, TotalDepositLimitByPlayer:{TotalDepositLimitByPlayer}, TotalCountInfo.Count:{totalCountInfo}, DailyCount:{dailyCount}.", playerCode, processDateOnly, promotionSettings.TotalDepositLimitByPlayer, totalCountInfo.Count, dailyCount);
 				return false;
+			}
 		}
 
 		await firstLevelRepository.DecrementPlayerDepositByConditionAsync(
