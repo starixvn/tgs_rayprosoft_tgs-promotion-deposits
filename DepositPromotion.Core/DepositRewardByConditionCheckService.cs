@@ -18,9 +18,11 @@ internal class DepositRewardByConditionCheckService(
 		DateTimeOffset date,
 		CancellationToken cancellationToken = default)
 	{
-		var promotionSettings = await promotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(
+		var rule = await promotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(
 			promotionId,
 			cancellationToken).ConfigureAwait(false);
+
+		var promotionSettings = rule?.CampaignDetail;
 
 		logger.LogInformation("PromotionId:{promotionId}, PromotionSettings:{promotionSettings}.", promotionId, promotionSettings);
 
