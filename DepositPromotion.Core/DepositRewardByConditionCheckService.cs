@@ -29,8 +29,6 @@ internal class DepositRewardByConditionCheckService(
 		if (promotionSettings is null)
 			return false;
 
-		logger.LogInformation("PromotionId:{promotionId}, PromotionSettings.PlayerConditions:{PlayerConditions}.", promotionId, promotionSettings.PlayerConditions);
-
 		if (promotionSettings.PlayerConditions is not null)
 		{
 			var playerInfo = await playerServiceClient.GetPlayerInfoAsync(
