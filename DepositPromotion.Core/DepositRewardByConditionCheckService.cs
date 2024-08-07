@@ -22,6 +22,8 @@ internal class DepositRewardByConditionCheckService(
 			promotionId,
 			cancellationToken).ConfigureAwait(false);
 
+		logger.LogInformation("PromotionId:{promotionId}, PromotionSettings:{promotionSettings}.", promotionId, promotionSettings);
+
 		if (promotionSettings is null)
 			return false;
 
