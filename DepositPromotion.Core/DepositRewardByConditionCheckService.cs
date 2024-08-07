@@ -24,10 +24,10 @@ internal class DepositRewardByConditionCheckService(
 
 		var promotionSettings = rule?.CampaignDetail;
 
-		logger.LogInformation("PromotionId:{promotionId}, PromotionSettings:{promotionSettings}.", promotionId, promotionSettings);
-
 		if (promotionSettings is null)
 			return false;
+
+		logger.LogInformation("PromotionId:{promotionId}, PromotionSettings.PlayerConditions:{playerConditions}.", promotionId, promotionSettings.PlayerConditions);
 
 		if (promotionSettings.PlayerConditions is not null)
 		{
