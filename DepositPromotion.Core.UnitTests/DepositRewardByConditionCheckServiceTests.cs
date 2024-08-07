@@ -3,8 +3,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Deposits;
-using Tgs.Promotion.Deposits.MessageQueue;
-using Xunit;
 
 namespace DepositPromotion.Core.UnitTests;
 
@@ -18,7 +16,6 @@ public class DepositRewardByConditionCheckServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
-        
 
         var sut = new DepositRewardByConditionCheckService(
             fakeFirstLevelRepository,
@@ -82,8 +79,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -404,8 +401,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionTotalCountAsync(
             Arg.Is(promotionId),
@@ -474,8 +471,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeTgsRepository.GetDepositCountInfoAsync(
             Arg.Is(promotionId),
@@ -540,8 +537,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionWeeklyCountAsync(
             Arg.Is(promotionId),
@@ -716,8 +713,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
             .Returns(new Dictionary<string, string>
@@ -770,8 +767,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
             .Returns(new Dictionary<string, string>
@@ -825,8 +822,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
             .Returns(new Dictionary<string, string>
@@ -879,8 +876,8 @@ public class DepositRewardByConditionCheckServiceTests
                 PlayerCode = playerCode
             });
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
             .Returns(new Dictionary<string, string>

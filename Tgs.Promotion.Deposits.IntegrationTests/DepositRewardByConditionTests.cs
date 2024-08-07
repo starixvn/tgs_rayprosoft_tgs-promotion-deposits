@@ -156,10 +156,10 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         _ = fakeTimeProvider.GetUtcNow()
             .Returns(currentTime);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(
             Arg.Is(promotionId),
             Arg.Any<CancellationToken>())
-            .Returns(new DepositRewardByConditionSettings(
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(new DepositRewardByConditionSettings(
                 1,
                 2,
                 3,
@@ -169,7 +169,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                 null,
                 null,
                 null,
-                null));
+                null)));
         // Act
         var response = await messageSender.RequestAsync<CheckPromotionRequest, ReadOnlyMemory<byte>>(subject, request);
         var actual = CheckPromotionResponse.Parser.ParseFrom(response.Span);
