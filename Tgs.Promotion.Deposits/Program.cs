@@ -109,8 +109,7 @@ var builder = WebApplication.CreateBuilder(args);
 		.AddNatsGlobPatternExchange("*");
 
 	var instrumentationExtenionFilters = new[] { "html", "ico", "png", "jpg" };
-	_ = builder.Services
-		.AddProfileViewer()
+	_ = builder.Services		
 		.AddHealthChecks()
 		.Services
 		.AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
@@ -142,6 +141,7 @@ var builder = WebApplication.CreateBuilder(args);
 			.AddAspNetCoreInstrumentation()
 			.AddOtlpExporter())
 		.Services
+		.AddProfileViewer()
 		.Configure<AspNetCoreTraceInstrumentationOptions>(options => options.Filter =
 			httpContext => !httpContext.Request.Path.HasValue
 				|| !httpContext.Request.Path.StartsWithSegments("/swagger")

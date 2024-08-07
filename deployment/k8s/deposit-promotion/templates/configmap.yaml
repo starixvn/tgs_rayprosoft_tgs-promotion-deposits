@@ -15,11 +15,6 @@ data:
         "CalculateServiceBaseUrl": "http://tgs-calculate-api",
         "BrandCertificationBaseUrl": "http://brand-cert-api",
         "PlayerServiceBaseUrl": "http://player-api"
-      },
-      "Logging": {
-        "LogLevel": {
-          "Microsoft.AspNetCore.HttpLogging": "Information"          
-        }
       }
     }
   otel-collector-config.yaml: |
