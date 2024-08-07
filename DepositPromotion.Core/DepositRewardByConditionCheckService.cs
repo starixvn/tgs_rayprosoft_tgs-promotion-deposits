@@ -44,7 +44,7 @@ internal class DepositRewardByConditionCheckService(
 
 			if (promotionSettings.PlayerConditions.Any(propName => propName == "RealName"))
 			{
-				var realName = playerProps?["RealName"];
+				playerProps.TryGetValue("RealName", out var realName);
 
 				logger.LogInformation("PlayerCode:{playerCode}, RealName:{realName}.", playerCode, realName);
 
@@ -54,7 +54,7 @@ internal class DepositRewardByConditionCheckService(
 
 			if (promotionSettings.PlayerConditions.Any(propName => propName == "Birthdate"))
 			{
-				var birthdate = playerProps?["Birthdate"];
+				playerProps.TryGetValue("Birthdate", out var birthdate);
 
 				logger.LogInformation("PlayerCode:{playerCode}, Birthdate:{birthdate}.", playerCode, birthdate);
 
@@ -64,7 +64,7 @@ internal class DepositRewardByConditionCheckService(
 
 			if (promotionSettings.PlayerConditions.Any(propName => propName == "Phone"))
 			{
-				var phone = playerProps?["Phone"];
+				playerProps.TryGetValue("Phone", out var phone);
 
 				logger.LogInformation("PlayerCode:{playerCode}, Phone:{phone}.", playerCode, phone);
 
