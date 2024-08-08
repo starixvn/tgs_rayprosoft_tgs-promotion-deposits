@@ -1,7 +1,5 @@
-﻿using System;
-using StackExchange.Redis;
+﻿using StackExchange.Redis;
 using Tgs.Promotion.Deposits.Repositories;
-using Xunit;
 
 namespace DepositPromotion.Repositories.UnitTests;
 
@@ -387,7 +385,37 @@ public class RedisFirstLevelRepositoryTests
     }
 
     [Fact]
-    public async Task RedisFirstLevelRepository_遞增每日玩家儲值送活動次數()
+    public async Task RedisFirstLevelRepository_遞增每日玩家儲值送活動次數_第一次未設置TTL()
+    {
+        // Arrange
+        var fakeRedisDatabase = Substitute.For<IDatabase>();
+
+        var sut = new RedisFirstLevelRepository(fakeRedisDatabase);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateOnly.Parse("2024-03-20");
+
+        var expectedKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:{date}");        
+
+        // Act
+        await sut.IncrementPlayerDepositByConditionAsync(promotionId, playerCode, date);
+
+        _ = fakeRedisDatabase.KeyTimeToLiveAsync(Arg.Is(expectedKey))
+            .Returns(new TimeSpan?());
+
+        // Assert
+        _ = fakeRedisDatabase.Received(1)
+            .StringIncrementAsync(Arg.Is(expectedKey));
+
+        _ = fakeRedisDatabase.Received(1)
+            .KeyExpireAsync(
+                Arg.Is(expectedKey),
+                Arg.Is(TimeSpan.FromDays(1)));
+    }
+
+    [Fact]
+    public async Task RedisFirstLevelRepository_遞增每日玩家儲值送活動次數_設置過TTL_則不再設置()
     {
         // Arrange
         var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -399,20 +427,21 @@ public class RedisFirstLevelRepositoryTests
         var date = DateOnly.Parse("2024-03-20");
 
         var expectedKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:{date}");
-        var expectedExpiry = DateOnly.Parse("2024-04-02").ToDateTime(TimeOnly.MinValue) - date.ToDateTime(TimeOnly.MinValue);
+
+        _ = fakeRedisDatabase.KeyTimeToLiveAsync(Arg.Is(expectedKey))
+            .Returns(TimeSpan.FromDays(1));
 
         // Act
         await sut.IncrementPlayerDepositByConditionAsync(promotionId, playerCode, date);
 
         // Assert
         _ = fakeRedisDatabase.Received(1)
-            .StringSetAsync(
-                Arg.Is(expectedKey),
-                Arg.Is<RedisValue>(0L),
-                expiry: Arg.Is(expectedExpiry),
-                when: Arg.Is(When.NotExists));
-        _ = fakeRedisDatabase.Received(1)
             .StringIncrementAsync(Arg.Is(expectedKey));
+
+        _ = fakeRedisDatabase.Received(0)
+            .KeyExpireAsync(
+                Arg.Is(expectedKey),
+                Arg.Is(TimeSpan.FromDays(1)));
     }
 
     [Fact]
