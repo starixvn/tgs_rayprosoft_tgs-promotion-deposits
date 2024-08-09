@@ -31,11 +31,14 @@ internal class RedisFirstLevelRepository(
 	{
 		var dataKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:{date}");
 
+		var expireDate = date.CeilingMonthDay().AddDays(1).ToDateTime(TimeOnly.MinValue);
+
 		_ = await redisDatabase.StringIncrementAsync(dataKey).ConfigureAwait(false);
 
 		if (await redisDatabase.KeyTimeToLiveAsync(dataKey).ConfigureAwait(false) is null)
 		{
-			await redisDatabase.KeyExpireAsync(dataKey, TimeSpan.FromDays(1)).ConfigureAwait(false);
+			var expiry = expireDate - date.ToDateTime(TimeOnly.MinValue);
+			await redisDatabase.KeyExpireAsync(dataKey, expiry).ConfigureAwait(false);
 		}
 	}
 

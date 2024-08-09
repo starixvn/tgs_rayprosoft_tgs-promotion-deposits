@@ -74,6 +74,7 @@ internal class DepositRewardByConditionCheckService(
 		}
 
 		var processDateOnly = DateOnly.FromDateTime(date.DateTime);
+		logger.LogInformation("Date:{date}, ProcessDateOnly:{processDateOnly}.", date.ToString("yyyy-MM-dd HH:mm:ss zzz"), processDateOnly);
 
 		await firstLevelRepository.IncrementPlayerDepositByConditionAsync(
 			promotionId,

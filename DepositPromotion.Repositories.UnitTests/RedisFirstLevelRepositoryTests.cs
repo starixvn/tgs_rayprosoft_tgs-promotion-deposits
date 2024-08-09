@@ -1,4 +1,6 @@
-﻿using StackExchange.Redis;
+﻿using System.Text.Json;
+using StackExchange.Redis;
+using Tgs.Promotion.Deposits;
 using Tgs.Promotion.Deposits.Repositories;
 
 namespace DepositPromotion.Repositories.UnitTests;
@@ -6,6 +8,40 @@ namespace DepositPromotion.Repositories.UnitTests;
 public class RedisFirstLevelRepositoryTests
 {
     private static readonly RedisKey _KeyPrefix = "Tgs:Promotion:Deposits:";
+
+    [Fact]
+    public void IncrementPlayerDepositByConditionAsync_expiry計算()
+    {
+        var queryDate = new DateTimeOffset(2024, 8, 8, 13, 0, 0, TimeSpan.FromHours(8d));
+
+        var promotionId = Guid.Parse("019121ad-6fae-0000-0001-07e8593a0694");
+        var playerCode = "4umzzymax6vv";
+
+        var date = DateOnly.FromDateTime(queryDate.DateTime);
+
+        var dataKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:{date}");
+
+        var expireDate = date.CeilingMonthDay().AddDays(1).ToDateTime(TimeOnly.MinValue);
+
+        var expiry = expireDate - date.ToDateTime(TimeOnly.MinValue);
+
+        Assert.Equal($"Tgs:Promotion:Deposits:DepositRewardV2:019121ad-6fae-0000-0001-07e8593a0694:4umzzymax6vv:Day:{date}", dataKey);
+        Assert.Equal(new DateTime(2024, 9, 2, 0, 0, 0, DateTimeKind.Unspecified), expireDate);
+        Assert.Equal(TimeSpan.FromDays(25), expiry);
+    }
+
+    [Fact]
+    public void GetPlayerDepositByConditionTotalCountAsync_JsonSerializer_Deserialize()
+    {
+        var redisValue = """
+            {    "processed": "2024-08-07T16:00:00Z",    "count": 1}
+            """;
+
+        var countInfo = JsonSerializer.Deserialize<DepositCountInfo>((string)redisValue!, PromotionUtility.SerializerOptions);
+
+        Assert.NotNull(countInfo);
+        Assert.Equal(new DateTime(2024, 8, 7, 16, 0, 0, DateTimeKind.Utc), countInfo.Processed);
+    }
 
     [Fact]
     public async Task RedisFirstLevelRepository_取得每日玩家儲值送活動存款次數()
@@ -385,7 +421,7 @@ public class RedisFirstLevelRepositoryTests
     }
 
     [Fact]
-    public async Task RedisFirstLevelRepository_遞增每日玩家儲值送活動次數_第一次未設置TTL()
+    public async Task RedisFirstLevelRepository_遞增每日玩家儲值送活動次數_第一次未設置TTL_會設置TTL()
     {
         // Arrange
         var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -396,7 +432,7 @@ public class RedisFirstLevelRepositoryTests
         var playerCode = "test1";
         var date = DateOnly.Parse("2024-03-20");
 
-        var expectedKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:{date}");        
+        var expectedKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:{date}");
 
         // Act
         await sut.IncrementPlayerDepositByConditionAsync(promotionId, playerCode, date);
@@ -408,10 +444,13 @@ public class RedisFirstLevelRepositoryTests
         _ = fakeRedisDatabase.Received(1)
             .StringIncrementAsync(Arg.Is(expectedKey));
 
+        var expireDate = date.CeilingMonthDay().AddDays(1).ToDateTime(TimeOnly.MinValue);
+        var expiry = expireDate - date.ToDateTime(TimeOnly.MinValue);
+
         _ = fakeRedisDatabase.Received(1)
             .KeyExpireAsync(
                 Arg.Is(expectedKey),
-                Arg.Is(TimeSpan.FromDays(1)));
+                Arg.Is(expiry));
     }
 
     [Fact]
@@ -441,7 +480,7 @@ public class RedisFirstLevelRepositoryTests
         _ = fakeRedisDatabase.Received(0)
             .KeyExpireAsync(
                 Arg.Is(expectedKey),
-                Arg.Is(TimeSpan.FromDays(1)));
+                Arg.Any<TimeSpan?>());
     }
 
     [Fact]
