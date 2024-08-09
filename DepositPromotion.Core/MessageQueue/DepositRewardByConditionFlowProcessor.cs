@@ -28,8 +28,8 @@ internal class DepositRewardByConditionFlowProcessor(
 			return _EmptyResponse;
 
 		var promotionInfo = await promotionServiceClient.GetPromotionMainInfoAsync(
-				data.PromotionId,
-				cancellationToken).ConfigureAwait(false);
+			data.PromotionId,
+			cancellationToken).ConfigureAwait(false);
 
 		var brandInfo = await brandServiceClient.GetBrandInfoAsync(
 			promotionInfo!.BrandId,
