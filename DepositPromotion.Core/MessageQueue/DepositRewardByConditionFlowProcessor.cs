@@ -23,6 +23,10 @@ internal class DepositRewardByConditionFlowProcessor(
 		CancellationToken cancellationToken = default)
 	{
 		var action = subject.Split('.').Last();
+
+		if (data.PromotionId.ToGuid() == Guid.Empty)
+			return _EmptyResponse;
+
 		var promotionInfo = await promotionServiceClient.GetPromotionMainInfoAsync(
 			data.PromotionId,
 			cancellationToken).ConfigureAwait(false);
