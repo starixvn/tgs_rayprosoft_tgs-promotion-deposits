@@ -24,7 +24,7 @@ internal class DepositRewardByConditionFlowProcessor(
 	{
 		var action = subject.Split('.').Last();
 
-		if (data.PromotionId.ToGuid() == Guid.Empty)
+		if (data.PromotionId == null || data.PromotionId.ToGuid() == Guid.Empty)
 			return _EmptyResponse;
 
 		var promotionInfo = await promotionServiceClient.GetPromotionMainInfoAsync(
