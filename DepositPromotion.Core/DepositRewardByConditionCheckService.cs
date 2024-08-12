@@ -75,11 +75,11 @@ internal class DepositRewardByConditionCheckService(
 
 		var processDateOnly = DateOnly.FromDateTime(date.DateTime);
 
-		await firstLevelRepository.IncrementPlayerDepositByConditionAsync(
-			promotionId,
-			playerCode,
-			processDateOnly,
-			cancellationToken).ConfigureAwait(false);
+		//await firstLevelRepository.IncrementPlayerDepositByConditionAsync(
+		//	promotionId,
+		//	playerCode,
+		//	processDateOnly,
+		//	cancellationToken).ConfigureAwait(false);
 
 		var dailyCount = await firstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
 			promotionId,
@@ -156,11 +156,11 @@ internal class DepositRewardByConditionCheckService(
 			}
 		}
 
-		await firstLevelRepository.DecrementPlayerDepositByConditionAsync(
-			promotionId,
-			playerCode,
-			DateOnly.FromDateTime(date.DateTime),
-			cancellationToken).ConfigureAwait(false);
+		//await firstLevelRepository.DecrementPlayerDepositByConditionAsync(
+		//	promotionId,
+		//	playerCode,
+		//	DateOnly.FromDateTime(date.DateTime),
+		//	cancellationToken).ConfigureAwait(false);
 
 		return true;
 	}
