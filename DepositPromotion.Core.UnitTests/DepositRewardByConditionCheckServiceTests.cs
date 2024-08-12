@@ -80,7 +80,7 @@ public class DepositRewardByConditionCheckServiceTests
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
 
         // Assert
-        var processDateOnly = DateOnly.FromDateTime(date.DateTime);
+        //var processDateOnly = DateOnly.FromDateTime(date.DateTime);
         //_ = fakeFirstLevelRepository.Received(1)
         //    .IncrementPlayerDepositByConditionAsync(
         //        Arg.Is(promotionId),
@@ -180,7 +180,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(2);
+            .Returns(1);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);

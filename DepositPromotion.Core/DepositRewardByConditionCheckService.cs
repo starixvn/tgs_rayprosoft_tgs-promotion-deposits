@@ -89,7 +89,7 @@ internal class DepositRewardByConditionCheckService(
 
 		if (promotionSettings.DailyDepositLimitByPlayer is not null)
 		{
-			if (promotionSettings.DailyDepositLimitByPlayer < dailyCount)
+			if (promotionSettings.DailyDepositLimitByPlayer < dailyCount + 1)
 			{
 				logger.LogInformation("PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, DailyDepositLimitByPlayer:{DailyDepositLimitByPlayer}, DailyCount:{dailyCount}.", playerCode, processDateOnly, promotionSettings.DailyDepositLimitByPlayer, dailyCount);
 				return false;
