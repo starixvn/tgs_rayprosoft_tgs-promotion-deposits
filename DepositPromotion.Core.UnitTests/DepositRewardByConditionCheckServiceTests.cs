@@ -28,12 +28,6 @@ public class DepositRewardByConditionCheckServiceTests
         var playerCode = "test1";
         var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
 
-        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
-            .Returns(new PlayerInfo
-            {
-                PlayerCode = playerCode
-            });
-
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
 
@@ -42,7 +36,7 @@ public class DepositRewardByConditionCheckServiceTests
     }
 
     [Fact]
-    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果沒有開限制會回傳True()
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果沒有開玩家參加條件會回傳True()
     {
         // Arrange
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
@@ -86,11 +80,18 @@ public class DepositRewardByConditionCheckServiceTests
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
 
         // Assert
+        var processDateOnly = DateOnly.FromDateTime(date.DateTime);
+        //_ = fakeFirstLevelRepository.Received(1)
+        //    .IncrementPlayerDepositByConditionAsync(
+        //        Arg.Is(promotionId),
+        //        Arg.Is(playerCode),
+        //        Arg.Is(processDateOnly));
+
         Assert.True(actual);
     }
 
     [Fact]
-    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果參加條件有RealName而玩家沒有RealName會回傳False ()
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果參加條件有RealName而玩家沒有RealName會回傳False()
     {
         // Arrange
         var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
