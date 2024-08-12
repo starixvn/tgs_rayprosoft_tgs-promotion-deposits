@@ -91,57 +91,6 @@ public class DepositRewardByConditionCheckServiceTests
     }
 
     [Fact]
-    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果參加條件有RealName而玩家沒有RealName會回傳False()
-    {
-        // Arrange
-        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
-        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
-        var fakeTgsRepository = Substitute.For<ITgsRepository>();
-        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
-
-        var sut = new DepositRewardByConditionCheckService(
-            fakeFirstLevelRepository,
-            fakePromotionServiceClient,
-            fakeTgsRepository,
-            fakePlayerServiceClient,
-            NullLogger<DepositRewardByConditionCheckService>.Instance);
-
-        var promotionId = Guid.NewGuid();
-        var playerCode = "test1";
-        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
-
-        var settings = new DepositRewardByConditionSettings(
-            1M,
-            1M,
-            10M,
-            [],
-            null,
-            ["RealName"],
-            null,
-            null,
-            null,
-            null);
-
-        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
-            .Returns(new PlayerInfo
-            {
-                PlayerCode = playerCode
-            });
-
-        _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
-            .Returns(new Dictionary<string, string> { }.ToImmutableDictionary());
-
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
-            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
-
-        // Act
-        var actual = await sut.CheckAsync(promotionId, playerCode, date);
-
-        // Assert
-        Assert.False(actual);
-    }
-
-    [Fact]
     public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_每日次數超過設定值回傳False()
     {
         // Arrange
@@ -173,8 +122,8 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             null);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
             Arg.Is(promotionId),
@@ -217,24 +166,24 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             null,
             null,
-            1,
+            2,
             null,
             null);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionWeeklyCountAsync(
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(2);
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionDailyCountAsync(
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -275,8 +224,8 @@ public class DepositRewardByConditionCheckServiceTests
             1,
             null);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionMonthlyCountAsync(
             Arg.Is(promotionId),
@@ -288,7 +237,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -329,8 +278,8 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             1);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeTgsRepository.GetDepositCountInfoAsync(
             Arg.Is(promotionId),
@@ -342,7 +291,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -383,8 +332,8 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             1);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         _ = fakeFirstLevelRepository.GetPlayerDepositByConditionTotalCountAsync(
             Arg.Is(promotionId),
@@ -400,7 +349,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -470,7 +419,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -536,7 +485,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -614,7 +563,7 @@ public class DepositRewardByConditionCheckServiceTests
             Arg.Is(promotionId),
             Arg.Is(playerCode),
             Arg.Is(DateOnly.Parse("2024-03-25")))
-            .Returns(1);
+            .Returns(0);
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -717,8 +666,8 @@ public class DepositRewardByConditionCheckServiceTests
             null,
             null);
 
-        _ = fakePromotionServiceClient.GetPromotionRuleAsync<DepositRewardByConditionSettings>(Arg.Is(promotionId))
-            .Returns(settings);
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
 
         // Act
         var actual = await sut.CheckAsync(promotionId, playerCode, date);
@@ -946,4 +895,56 @@ public class DepositRewardByConditionCheckServiceTests
         // Assert
         Assert.True(actual);
     }
+
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_如果參加條件有RealName而玩家沒有RealName會回傳False()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateTimeOffset.ParseExact("2024-03-25T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            ["RealName"],
+            null,
+            null,
+            null,
+            null);
+
+        _ = fakePlayerServiceClient.GetPlayerInfoAsync(Arg.Is(playerCode))
+            .Returns(new PlayerInfo
+            {
+                PlayerCode = playerCode
+            });
+
+        _ = fakePlayerServiceClient.GetPlayerPropertiesAsync(Arg.Is(playerCode))
+            .Returns(new Dictionary<string, string> { }.ToImmutableDictionary());
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.False(actual);
+    }
+
 }
