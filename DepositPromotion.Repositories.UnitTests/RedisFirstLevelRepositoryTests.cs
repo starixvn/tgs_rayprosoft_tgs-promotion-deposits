@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text.Json;
 using StackExchange.Redis;
+using Tgs.Promotion.Deposits;
 using Tgs.Promotion.Deposits.Repositories;
 using Xunit;
 
@@ -384,6 +386,49 @@ public class RedisFirstLevelRepositoryTests
                 Arg.Is(expectedKey),
                 Arg.Any<RedisValue>(),
                 expiry: Arg.Is(expectedExpiry));
+    }
+
+    [Fact]
+    public async Task RedisFirstLevelRepository_取得每月玩家儲值送活動存款次數_隔天相加()
+    {
+        // Arrange
+        var fakeRedisDatabase = Substitute.For<IDatabase>();
+
+        var sut = new RedisFirstLevelRepository(fakeRedisDatabase);
+
+        var promotionId = Guid.NewGuid();
+        var playerCode = "test1";
+        var date = DateOnly.Parse("2024-08-15");
+
+        var expectedKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Month:{DateOnly.Parse("2024-08-01")}");
+
+        _ = fakeRedisDatabase.StringGetAsync(Arg.Is(expectedKey))
+            .Returns("""
+            {
+                "count": 0,
+                "snapshot": "2024-08-13"
+            }
+            """);
+
+        var keyFormat = "DepositRewardV2:{0}:{1}:Day:{2}";
+        _ = fakeRedisDatabase.StringGetAsync(
+            Arg.Is(_KeyPrefix.Append(string.Format(
+                keyFormat,
+                promotionId,
+                playerCode,
+                DateOnly.Parse("2024-08-14")))))
+            .Returns(2L);
+
+        // Act
+        var actual = await sut.GetPlayerDepositByConditionMonthlyCountAsync(promotionId, playerCode, date);
+
+        // Assert                
+        _ = fakeRedisDatabase.Received(1)
+            .StringSetAsync(
+                key: Arg.Is(expectedKey),
+                value: Arg.Is(new RedisValue(JsonSerializer.Serialize(new DepositCountSnapshot(2, DateOnly.Parse("2024-08-14"))))),                
+                expiry: Arg.Is(TimeSpan.FromDays(18d)));
+        Assert.Equal(2L, actual);
     }
 
     [Fact]
