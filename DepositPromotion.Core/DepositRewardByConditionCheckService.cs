@@ -87,11 +87,12 @@ internal class DepositRewardByConditionCheckService(
 			processDateOnly,
 			cancellationToken).ConfigureAwait(false);
 
-		logger.LogInformation("PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, DailyCount:{dailyCount}.", playerCode, processDateOnly, dailyCount);
+		logger.LogInformation("PromotionId:{promotionId}, PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, DailyCount:{dailyCount}.",
+			promotionId, playerCode, processDateOnly, dailyCount);
 
 		if (promotionSettings.DailyDepositLimitByPlayer is not null)
 		{
-			logger.LogInformation("DailyDepositLimitByPlayer:{DailyDepositLimitByPlayer}.", promotionSettings.DailyDepositLimitByPlayer);
+			logger.LogInformation("PromotionId:{promotionId}, DailyDepositLimitByPlayer:{DailyDepositLimitByPlayer}.", promotionId, promotionSettings.DailyDepositLimitByPlayer);
 			if (promotionSettings.DailyDepositLimitByPlayer < dailyCount + 1)
 			{
 				return false;
@@ -106,8 +107,8 @@ internal class DepositRewardByConditionCheckService(
 				processDateOnly,
 				cancellationToken).ConfigureAwait(false);
 
-			logger.LogInformation("WeeklyDepositLimitByPlayer:{WeeklyDepositLimitByPlayer}, WeeklyCount:{weeklyCount}.",
-				promotionSettings.WeeklyDepositLimitByPlayer, weeklyCount);
+			logger.LogInformation("PromotionId:{promotionId}, WeeklyDepositLimitByPlayer:{WeeklyDepositLimitByPlayer}, WeeklyCount:{weeklyCount}.",
+				promotionId, promotionSettings.WeeklyDepositLimitByPlayer, weeklyCount);
 			if (promotionSettings.WeeklyDepositLimitByPlayer < weeklyCount + dailyCount + 1)
 			{
 				return false;
@@ -122,8 +123,8 @@ internal class DepositRewardByConditionCheckService(
 				processDateOnly,
 				cancellationToken).ConfigureAwait(false);
 
-			logger.LogInformation("MonthlyDepositLimitByPlayer:{MonthlyDepositLimitByPlayer}, MonthlyCount:{monthlyCount}.",
-				promotionSettings.MonthlyDepositLimitByPlayer, monthlyCount);
+			logger.LogInformation("PromotionId:{promotionId}, MonthlyDepositLimitByPlayer:{MonthlyDepositLimitByPlayer}, MonthlyCount:{monthlyCount}.",
+				promotionId, promotionSettings.MonthlyDepositLimitByPlayer, monthlyCount);
 			if (promotionSettings.MonthlyDepositLimitByPlayer < monthlyCount + dailyCount + 1)
 			{
 				return false;
@@ -153,8 +154,8 @@ internal class DepositRewardByConditionCheckService(
 					cancellationToken).ConfigureAwait(false);
 			}
 
-			logger.LogInformation("TotalDepositLimitByPlayer:{TotalDepositLimitByPlayer}, TotalCountInfo.Count:{totalCountInfo}.",
-				promotionSettings.TotalDepositLimitByPlayer, totalCountInfo.Count);
+			logger.LogInformation("PromotionId:{promotionId}, PlayerCode:{playerCode}, TotalDepositLimitByPlayer:{TotalDepositLimitByPlayer}, TotalCountInfo.Count:{totalCountInfo}.",
+				promotionId, playerCode, promotionSettings.TotalDepositLimitByPlayer, totalCountInfo.Count);
 			if (promotionSettings.TotalDepositLimitByPlayer < totalCountInfo.Count + dailyCount + 1)
 			{
 				return false;
