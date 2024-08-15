@@ -947,4 +947,48 @@ public class DepositRewardByConditionCheckServiceTests
         Assert.False(actual);
     }
 
+    [Fact]
+    public async Task DepositRewardByConditionCheckService_檢查是否可以使用儲值送活動_模擬隔天進來狀況()
+    {
+        // Arrange
+        var fakeFirstLevelRepository = Substitute.For<IFirstLevelRepository>();
+        var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
+        var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+
+        var sut = new DepositRewardByConditionCheckService(
+            fakeFirstLevelRepository,
+            fakePromotionServiceClient,
+            fakeTgsRepository,
+            fakePlayerServiceClient,
+            NullLogger<DepositRewardByConditionCheckService>.Instance);
+
+        var promotionId = Guid.Parse("01914b3e-b215-0000-0002-07e853ae62ca");
+        var playerCode = "4uel5ke0uf3k";
+        var date = DateTimeOffset.ParseExact("2024-08-15T00:00:00.0000000+08:00", "o", null);
+
+        var settings = new DepositRewardByConditionSettings(
+            1M,
+            1M,
+            10M,
+            [],
+            null,
+            null,
+            3,
+            null,
+            2,
+            null);
+
+        _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardByConditionSettings>>(Arg.Is(promotionId))
+            .Returns(new PromotionRule<DepositRewardByConditionSettings>(settings));
+
+        _ = fakeFirstLevelRepository.GetPlayerDepositByConditionMonthlyCountAsync(Arg.Is(promotionId), Arg.Is(playerCode), Arg.Is(DateOnly.Parse("2024-08-15")))
+            .Returns(2);
+
+        // Act
+        var actual = await sut.CheckAsync(promotionId, playerCode, date);
+
+        // Assert
+        Assert.False(actual);
+    }
 }

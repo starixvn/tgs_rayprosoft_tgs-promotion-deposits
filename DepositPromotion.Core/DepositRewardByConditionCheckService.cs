@@ -85,7 +85,7 @@ internal class DepositRewardByConditionCheckService(
 			promotionId,
 			playerCode,
 			processDateOnly,
-			cancellationToken).ConfigureAwait(false);
+			cancellationToken).ConfigureAwait(false) ?? 0L;
 
 		logger.LogInformation("PromotionId:{promotionId}, PlayerCode:{playerCode}, ProcessDate:{processDateOnly}, DailyCount:{dailyCount}.",
 			promotionId, playerCode, processDateOnly, dailyCount);
