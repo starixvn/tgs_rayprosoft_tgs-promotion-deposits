@@ -140,12 +140,16 @@ internal class DepositRewardByConditionCheckService(
 
 			if (totalCountInfo is null || totalCountInfo.Processed < date.UtcDateTime)
 			{
+				logger.LogInformation("promotionId:{promotionId}, playerCode:{playerCode}, totalCountInfo:{totalCountInfo}, date.UtcDateTime:{date}.",
+					promotionId, playerCode, totalCountInfo, date.UtcDateTime);
 				totalCountInfo = await tgsRepository.GetDepositCountInfoAsync(
 					promotionId,
 					playerCode,
 					date.UtcDateTime,
 					cancellationToken).ConfigureAwait(false);
 
+				logger.LogInformation("promotionId:{promotionId}, playerCode:{playerCode}, processDateOnly:{processDateOnly}, totalCountInfo:{totalCountInfo}.",
+					promotionId, playerCode, processDateOnly, totalCountInfo);
 				await firstLevelRepository.SetPlayerDepositByConditionTotalCountAsync(
 					promotionId,
 					playerCode,
