@@ -8,5 +8,6 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddPromotionDeposits(this IServiceCollection services)
 		=> services
 			.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient)
+			.AddSingleton<IConditionHasher, DepositRewardByConditionHasher>()
 			.AddTransient<IDepositRewardByConditionCheckService, DepositRewardByConditionCheckService>();
 }

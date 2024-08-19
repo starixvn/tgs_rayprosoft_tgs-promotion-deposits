@@ -1,14 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
+using Isopoh.Cryptography.Blake2b;
+using Isopoh.Cryptography.SecureArray;
 
 namespace Tgs.Promotion.Deposits;
+
 internal class DepositRewardByConditionHasher : IConditionHasher
 {
-	public long ComputeHash(ReadOnlySpan<byte> data)
+	public long ComputeHash(Guid depositFormId)
 	{
-		throw new NotImplementedException();
+		var hasher = Blake2B.Create(
+			 new Blake2BConfig { OutputSizeInBits = 64 },
+			 SecureArray.DefaultCall);
+
+		var hash = hasher
+			.AsHashAlgorithm()
+			.ComputeHash(depositFormId.ToByteArray());
+
+		return MemoryMarshal.AsRef<long>(hash);
 	}
 }

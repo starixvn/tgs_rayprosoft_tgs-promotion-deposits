@@ -1,6 +1,6 @@
 ﻿namespace Tgs.Promotion.Deposits;
 
-internal interface IConditionHasher
+public interface IConditionHasher
 {
-	long ComputeHash(ReadOnlySpan<byte> data);
+	long ComputeHash(Guid depositFormId);
 }
