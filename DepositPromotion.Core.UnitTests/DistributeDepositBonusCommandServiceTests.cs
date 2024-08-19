@@ -1,9 +1,8 @@
 ﻿using Tgs.Calculate.Clients;
 using Tgs.Payment.Clients;
 using Tgs.Promotion.Clients;
-using Tgs.Promotion.Deposits.ApplicationServices;
 using Tgs.Promotion.Deposits;
-using NSubstitute;
+using Tgs.Promotion.Deposits.ApplicationServices;
 
 namespace DepositPromotion.Core.UnitTests;
 
@@ -16,11 +15,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -97,11 +98,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -181,11 +184,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -258,11 +263,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -305,7 +312,7 @@ public class DistributeDepositBonusCommandServiceTests
 
         _ = fakePromotionServiceClient.GetPromotionRuleAsync<PromotionRule<DepositRewardSettings>>(Arg.Is(promotionId))
             .Returns(new PromotionRule<DepositRewardSettings>(depositRewardSetting));
-
+        
         _ = fakePromotionServiceClient.GetPromotionDistributePlanAsync(Arg.Is(promotionId), Arg.Is(0L))
             .Returns(new PromotionDistributePlanInfo(
                 distributePlanId,
@@ -343,11 +350,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var brandId = Guid.NewGuid();
         var command = new DistributeDepositBonusCommand(new DepositFormInfo
@@ -385,11 +394,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -446,11 +457,13 @@ public class DistributeDepositBonusCommandServiceTests
         var fakePromotionServiceClient = Substitute.For<IPromotionServiceClient>();
         var fakeTgsRepository = Substitute.For<ITgsRepository>();
         var fakeCalculateClient = Substitute.For<ICalculateClient>();
+        var fakeHasher = Substitute.For<IConditionHasher>();
 
         var sut = new DistributeDepositBonusCommandService(
             fakePromotionServiceClient,
             fakeTgsRepository,
-            fakeCalculateClient);
+            fakeCalculateClient,
+            fakeHasher);
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();

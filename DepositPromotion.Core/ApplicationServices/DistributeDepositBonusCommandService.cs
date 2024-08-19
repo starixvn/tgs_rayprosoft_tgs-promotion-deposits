@@ -1,5 +1,4 @@
-﻿using Isopoh.Cryptography.Blake2b;
-using Tgs.Calculate.Clients;
+﻿using Tgs.Calculate.Clients;
 using Tgs.Promotion.Clients;
 using Tgs.ServiceUtility;
 
@@ -8,7 +7,8 @@ namespace Tgs.Promotion.Deposits.ApplicationServices;
 internal class DistributeDepositBonusCommandService(
 	IPromotionServiceClient promotionServiceClient,
 	ITgsRepository tgsRepository,
-	ICalculateClient calculateClient) : ICommandService<DistributeDepositBonusCommand>
+	ICalculateClient calculateClient,
+	IConditionHasher hasher) : ICommandService<DistributeDepositBonusCommand>
 {
 	public async ValueTask ExecuteAsync(DistributeDepositBonusCommand command, CancellationToken cancellationToken = default)
 	{
@@ -54,9 +54,11 @@ internal class DistributeDepositBonusCommandService(
 			return;
 		}
 
+		var hash = hasher.ComputeHash(command.DepositForm.Id);
+
 		var distPlan = await promotionServiceClient.GetPromotionDistributePlanAsync(
 			promotionId,
-			0L,
+			hash,
 			cancellationToken).ConfigureAwait(false);
 
 		await promotionServiceClient.DistributePromotionBonusAsync(
