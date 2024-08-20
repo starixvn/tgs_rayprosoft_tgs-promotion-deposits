@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using NATS.Client.Core;
 using Npgsql;
 using OpenTelemetry.Exporter;
@@ -31,6 +32,19 @@ var builder = WebApplication.CreateBuilder(args);
 					"MachineName",
 					() => Environment.MachineName));
 			});
+		});
+
+	builder.Services
+		.AddControllers()
+		.Services
+		.AddSwaggerGen(c =>
+		{
+			c.SwaggerDoc("v1", new OpenApiInfo { Title = "Promotion Deposits Service", Version = "v1" });
+
+			var xml = $"PromotionDepositsService.xml";
+			var path = Path.Combine(AppContext.BaseDirectory, xml);
+			if (File.Exists(path))
+				c.IncludeXmlComments(path);
 		});
 
 	builder.Services
@@ -109,7 +123,7 @@ var builder = WebApplication.CreateBuilder(args);
 		.AddNatsGlobPatternExchange("*");
 
 	var instrumentationExtenionFilters = new[] { "html", "ico", "png", "jpg" };
-	_ = builder.Services		
+	_ = builder.Services
 		.AddHealthChecks()
 		.Services
 		.AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
@@ -132,11 +146,11 @@ var builder = WebApplication.CreateBuilder(args);
 			.AddSource("Tgs.*")
 			.AddSource("TGS.*")
 			.AddSource("Valhalla.*")
-			.AddAspNetCoreInstrumentation()			
-			.AddNpgsql()			
+			.AddAspNetCoreInstrumentation()
+			.AddNpgsql()
 			.AddProfileViewExporter()
 			.AddOtlpExporter())
-		.WithMetrics(meterBuiler => meterBuiler			
+		.WithMetrics(meterBuiler => meterBuiler
 			.AddRuntimeInstrumentation()
 			.AddAspNetCoreInstrumentation()
 			.AddOtlpExporter())
@@ -154,7 +168,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 {
+	_ = app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Promotion Deposits Service v1"));
+
+	_ = app.MapControllers();
 	_ = app.MapHealthChecks("/healthz");
+	_ = app.MapSwagger();
 	app.MapProfileViewer();
 }
 

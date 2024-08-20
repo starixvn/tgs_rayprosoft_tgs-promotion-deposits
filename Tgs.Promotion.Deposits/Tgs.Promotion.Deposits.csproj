@@ -25,6 +25,7 @@
     </PackageReference>
     <PackageReference Include="PhoenixToolkits.MessageQueue.Nats" Version="2.2.0" />
     <PackageReference Include="ProfileViewer.OpenTelemetry.Exporter" Version="0.3.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.1" />
     <PackageReference Include="Tgs.MessageQueue.Nats.Serializers" Version="0.0.2" />
   </ItemGroup>
 

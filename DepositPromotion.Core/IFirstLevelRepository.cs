@@ -43,4 +43,13 @@ public interface IFirstLevelRepository
 		string playerCode,
 		DateOnly date,
 		CancellationToken cancellationToken = default);
+
+	IAsyncEnumerable<string> GetPlayerDailyKeysAsync(
+		Guid promotionId,
+		string playerCode,
+		CancellationToken cancellationToken = default);
+
+	ValueTask<long?> GetDailyCountAsync(
+		string key,
+		CancellationToken cancellationToken = default);
 }

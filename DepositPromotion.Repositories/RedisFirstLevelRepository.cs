@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Data;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using StackExchange.Redis;
 
 namespace Tgs.Promotion.Deposits.Repositories;
@@ -203,5 +205,36 @@ internal class RedisFirstLevelRepository(
 			dataKey,
 			JsonSerializer.Serialize(countInfo, PromotionUtility.SerializerOptions),
 			expiry: expireDate - date.ToDateTime(TimeOnly.MinValue)).ConfigureAwait(false);
+	}
+
+	public async IAsyncEnumerable<string> GetPlayerDailyKeysAsync(
+		Guid promotionId,
+		string playerCode,
+		[EnumeratorCancellation] CancellationToken cancellationToken = default)
+	{
+		var dataKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:*");
+
+		var keys = await redisDatabase.ScriptEvaluateAsync(LuaScript.Prepare(
+			   //Redis的keys模糊查询：
+			   " local res = redis.call('KEYS', @keypattern) " +
+			   " return res "), new { @keypattern = $"{dataKey}" })
+			.ConfigureAwait(false);
+
+		if (keys is null)
+			yield break;
+
+		var result = ((string[])keys).ToArray();
+
+		foreach (var key in result)
+			yield return key;
+	}
+
+	public async ValueTask<long?> GetDailyCountAsync(string key, CancellationToken cancellationToken = default)
+	{
+		var result = await redisDatabase
+			.StringGetAsync(key)
+			.ConfigureAwait(false);
+
+		return result.HasValue ? (long)result : null;
 	}
 }
