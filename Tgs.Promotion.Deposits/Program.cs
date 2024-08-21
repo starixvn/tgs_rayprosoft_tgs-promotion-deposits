@@ -25,9 +25,9 @@ var builder = WebApplication.CreateBuilder(args);
 			options.ParseStateValues = true;
 			_ = options.AddFluentdForwardExporter(fluentOptions =>
 			{
-				var nodeIp = builder.Configuration.GetValue<string>("NODE_IP")!;
+				var nodeIp = builder.Configuration.GetValue<string>("Otel:NodeIp")!;
 				fluentOptions.Host = nodeIp;
-				fluentOptions.Tag = builder.Configuration.GetValue<string>("OTEL_SERVICE_NAME")!;
+				fluentOptions.Tag = builder.Configuration.GetValue<string>("Otel:ServiceName")!;
 				fluentOptions.UseMessagePack(LogRecordFormatterResolver.GetResolverInstanceWithExtendInfo(
 					"MachineName",
 					() => Environment.MachineName));
