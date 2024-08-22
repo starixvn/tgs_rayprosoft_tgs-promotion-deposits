@@ -1,4 +1,6 @@
-﻿namespace Tgs.Promotion.Deposits;
+﻿using System.Text.Json;
+
+namespace Tgs.Promotion.Deposits;
 
 public interface IFirstLevelRepository
 {
@@ -44,12 +46,15 @@ public interface IFirstLevelRepository
 		DateOnly date,
 		CancellationToken cancellationToken = default);
 
-	IAsyncEnumerable<string> GetPlayerDailyKeysAsync(
-		Guid promotionId,
-		string playerCode,
+	IAsyncEnumerable<string> SearchKeysAsync(
+		string dataKey,
 		CancellationToken cancellationToken = default);
 
 	ValueTask<long?> GetDailyCountAsync(
+		string key,
+		CancellationToken cancellationToken = default);
+
+	ValueTask<JsonDocument> GetKeyInfoAsync(
 		string key,
 		CancellationToken cancellationToken = default);
 }

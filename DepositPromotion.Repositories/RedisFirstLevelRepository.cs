@@ -207,13 +207,10 @@ internal class RedisFirstLevelRepository(
 			expiry: expireDate - date.ToDateTime(TimeOnly.MinValue)).ConfigureAwait(false);
 	}
 
-	public async IAsyncEnumerable<string> GetPlayerDailyKeysAsync(
-		Guid promotionId,
-		string playerCode,
+	public async IAsyncEnumerable<string> SearchKeysAsync(
+		string dataKey,
 		[EnumeratorCancellation] CancellationToken cancellationToken = default)
 	{
-		var dataKey = _KeyPrefix.Append($"DepositRewardV2:{promotionId}:{playerCode}:Day:*");
-
 		var keys = await redisDatabase.ScriptEvaluateAsync(LuaScript.Prepare(
 			   //Redis的keys模糊查询：
 			   " local res = redis.call('KEYS', @keypattern) " +
@@ -236,5 +233,16 @@ internal class RedisFirstLevelRepository(
 			.ConfigureAwait(false);
 
 		return result.HasValue ? (long)result : null;
-	}
+	}	
+
+	public async ValueTask<JsonDocument> GetKeyInfoAsync(string key, CancellationToken cancellationToken = default)
+	{
+		var json = await redisDatabase
+			.StringGetAsync(key)
+			.ConfigureAwait(false);
+
+		return json.HasValue
+			? JsonDocument.Parse((string)json!)
+			: JsonDocument.Parse("{}");
+	}	
 }
