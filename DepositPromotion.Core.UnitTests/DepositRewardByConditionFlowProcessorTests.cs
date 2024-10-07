@@ -52,7 +52,7 @@ public class DepositRewardByConditionFlowProcessorTests
             .Returns(true);
 
         // Act
-        var response = await sut.HandleAsync("check", request, null);
+        var response = await sut.Handle("check", "check", null, request, default);
         var actual = CheckPromotionResponse.Parser.ParseFrom(response.Span);
 
         // Assert
@@ -109,7 +109,7 @@ public class DepositRewardByConditionFlowProcessorTests
             .Returns(true);
 
         // Act
-        var response = await sut.HandleAsync("check", request, null);
+        var response = await sut.Handle("check", "check", null, request, default);
         var actual = CheckPromotionResponse.Parser.ParseFrom(response.Span);
 
         // Assert
@@ -164,7 +164,7 @@ public class DepositRewardByConditionFlowProcessorTests
             .Returns(true);
 
         // Act
-        var response = await sut.HandleAsync("check", request, null);
+        var response = await sut.Handle("check", "check", null, request, default);
         var actual = CheckPromotionResponse.Parser.ParseFrom(response.Span);
 
         // Assert
@@ -214,7 +214,7 @@ public class DepositRewardByConditionFlowProcessorTests
             .Returns(true);
 
         // Act
-        await sut.HandleAsync("tag", request, null);
+        await sut.Handle("tag", "tag", null, request, default);
 
         // Assert
         _ = fakeDepositByConditionCheckService.Received(1)
@@ -267,7 +267,7 @@ public class DepositRewardByConditionFlowProcessorTests
             .Returns(true);
 
         // Act
-        await sut.HandleAsync("rollback", request, null);
+        await sut.Handle("rollback", "rollback", null, request, default);
 
         // Assert
         _ = fakeDepositByConditionCheckService.Received(1)

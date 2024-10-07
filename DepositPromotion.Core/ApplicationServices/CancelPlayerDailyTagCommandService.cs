@@ -1,11 +1,11 @@
 ﻿using Google.Protobuf;
+using TGS.Core.Infrastructures.Nats.Interface;
 using Tgs.Promotion.Clients.Protos;
 using Tgs.ServiceUtility;
-using Valhalla.MessageQueue;
 
 namespace Tgs.Promotion.Deposits.ApplicationServices;
 
-internal class CancelPlayerDailyTagCommandService(IMessageSender messageSender)
+internal class CancelPlayerDailyTagCommandService(IMessageManager messageSender)
 	: ICommandService<CancelPlayerDailyTagCommand>
 {
 	public ValueTask ExecuteAsync(CancelPlayerDailyTagCommand command, CancellationToken cancellationToken = default)
@@ -16,9 +16,9 @@ internal class CancelPlayerDailyTagCommandService(IMessageSender messageSender)
 			PromotionId = command.PromotionId,
 		};
 
-		return messageSender.SendAsync(
+		return messageSender.PublishAsync(
 			string.Format(PromotionCheckConsts.RollbackSubjectTemplate, "DepositRewardV2".ToLowerInvariant()),
 			request.ToByteArray(),
-			cancellationToken);
+			cancellationToken: cancellationToken);
 	}
 }

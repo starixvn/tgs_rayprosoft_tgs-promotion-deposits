@@ -1,8 +1,9 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using NATS.Client.Core;
 using Tgs.Calculate.Clients;
 using Tgs.Promotion.Clients.Protos;
-using Valhalla.MessageQueue;
+using TGS.Core.Infrastructures.Nats.Interface;
 
 namespace Tgs.Promotion.Deposits.MessageQueue;
 
@@ -10,16 +11,14 @@ internal class DepositRewardByConditionSettingProcessor(
 	ITgsRepository tgsRepository,
 	ICalculateClient calculateClient,
 	ILogger<DepositRewardByConditionSettingProcessor> logger)
-	: IMessageProcessor<CampaignDetailRequest, CampaignDetailResponse>
+	: IMessageReplyHandler<CampaignDetailRequest, CampaignDetailResponse>
 {
-	public async ValueTask<CampaignDetailResponse> HandleAsync(
-		string subject,
-		CampaignDetailRequest data,
-		IEnumerable<MessageHeaderValue>? headerValues,
-		CancellationToken cancellationToken = default)
+	public async Task<CampaignDetailResponse> Handle(string subject, string? queueGroup, NatsHeaders? natsHeaders,
+		CampaignDetailRequest? message,
+		CancellationToken cancellationToken)
 	{
 		var calculateId = await tgsRepository.GetPromotionCalculateIdAsync(
-			data.PromotionId,
+			message.PromotionId,
 			cancellationToken).ConfigureAwait(false);
 
 		if (calculateId is null)
@@ -31,15 +30,15 @@ internal class DepositRewardByConditionSettingProcessor(
 				cancellationToken).ConfigureAwait(false);
 
 			await tgsRepository.SetPromotionCalculateIdAsync(
-				data.PromotionId,
+				message.PromotionId,
 				calculateId.Value,
 				cancellationToken).ConfigureAwait(false);
 		}
 
 		var settings = JsonSerializer.Deserialize<DepositRewardByConditionSettings>(
-			data.Settings,
-			PromotionUtility.SerializerOptions)
-			?? throw new NullReferenceException("Deserialize DepositRewardSetting is null");
+			               message.Settings,
+			               PromotionUtility.SerializerOptions)
+		               ?? throw new NullReferenceException("Deserialize DepositRewardSetting is null");
 
 		logger.LogDebug("Account deposit setting : {settings}", settings);
 

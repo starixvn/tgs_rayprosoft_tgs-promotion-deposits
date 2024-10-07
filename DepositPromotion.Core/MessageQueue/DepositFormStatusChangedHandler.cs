@@ -1,8 +1,9 @@
-﻿using Tgs.Payment.Clients;
+﻿using NATS.Client.Core;
+using TGS.Core.Infrastructures.Nats.Interface;
+using Tgs.Payment.Clients;
 using Tgs.Payment.Protos;
 using Tgs.Promotion.Deposits.ApplicationServices;
 using Tgs.ServiceUtility;
-using Valhalla.MessageQueue;
 
 namespace Tgs.Promotion.Deposits.MessageQueue;
 
@@ -11,19 +12,16 @@ internal class DepositFormStatusChangedHandler(
 	ICommandService<DistributeDepositBonusCommand> distributeService)
 	: IMessageHandler<FormEventEx>
 {
-	public async ValueTask HandleAsync(
-		string subject,
-		FormEventEx data,
-		IEnumerable<MessageHeaderValue>? headerValues,
+	public async Task Handle(string subject, string? queueGroup, NatsHeaders? natsHeaders, FormEventEx? message,
 		CancellationToken cancellationToken = default)
 	{
-		var previousStatus = Enum.Parse<PaymentFlowState>(data.Status);
+		var previousStatus = Enum.Parse<PaymentFlowState>(message.Status);
 
 		var depositForm = await paymentServiceClient.GetDepositFormAsync(
-			data.FormId,
+			message.FormId,
 			cancellationToken).ConfigureAwait(false);
 
-		if (depositForm is null || depositForm.PromotionId is null)
+		if (depositForm?.PromotionId is null)
 			return;
 
 		if (previousStatus != depositForm.Status

@@ -39,7 +39,7 @@ public class DepositFormStatusChangedHandlerTests
             .Returns(depositFormInfo);
 
         // Act
-        await sut.HandleAsync("test", formEvent, null);
+        await sut.Handle("test", "test", null, formEvent);
 
         // Assert
         _ = fakeDistributeDepositBonusCommandService.Received(1)
@@ -77,7 +77,7 @@ public class DepositFormStatusChangedHandlerTests
             .Returns(depositFormInfo);
 
         // Act
-        await sut.HandleAsync("test", formEvent, null);
+        await sut.Handle("test", "test", null, formEvent);
 
         // Assert
         _ = fakeDistributeDepositBonusCommandService.DidNotReceive()
@@ -114,7 +114,7 @@ public class DepositFormStatusChangedHandlerTests
             .Returns(depositFormInfo);
 
         // Act
-        await sut.HandleAsync("test", formEvent, null);
+        await sut.Handle("test", "test", null, formEvent);
 
         // Assert
         _ = fakeDistributeDepositBonusCommandService.DidNotReceive()
@@ -142,7 +142,7 @@ public class DepositFormStatusChangedHandlerTests
         };
 
         // Act
-        await sut.HandleAsync("test", formEvent, null);
+        await sut.Handle("test", "test", null, formEvent);
 
         // Assert
         _ = fakeDistributeDepositBonusCommandService.DidNotReceive()

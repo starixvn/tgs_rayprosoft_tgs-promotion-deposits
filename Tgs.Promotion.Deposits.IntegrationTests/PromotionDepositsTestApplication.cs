@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using OpenTelemetry.Exporter;
 using StackExchange.Redis;
+using TGS.Core.Infrastructures.Nats;
 using Tgs.Promotion.Deposits.Repositories.Entities;
 
 namespace Tgs.Promotion.Deposits.IntegrationTests;
@@ -19,7 +20,7 @@ internal static class PromotionDepositsTestApplication
         .WithWebHostBuilder(hostBuilder => hostBuilder
             .ConfigureLogging(logging => logging.ClearProviders())
             .ConfigureServices(services => services
-                .AddFakeNatsMessageQueue()
+                .AddFakeNatsMessage()
                 .Replace(ServiceDescriptor.Singleton(sp =>
                 {
                     var dbContextOptionsBuilder = new DbContextOptionsBuilder<TgsContext>();

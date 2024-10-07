@@ -9,7 +9,7 @@ using Tgs.Calculate.Clients;
 using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Clients.Protos;
-using Tgs.Promotion.Deposits.MessageQueue;
+using TGS.Core.Infrastructures.Nats.Interface;
 using Valhalla.MessageQueue;
 using Xunit.Abstractions;
 
@@ -30,15 +30,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                 .ConfigureLogging(logging => logging.AddXUnit(testOutputHelper))
                 .ConfigureServices(services => services
                     .AddSingleton(fakeCalculateService)
-                    .AddMessageQueue()
-                    .AddDirectMessageQueue(directConfiguration => directConfiguration
-                        .AddProcessor(
-                            ProcessorTypes.DepositRewardByConditionSettingProcessorType,
-                            subject))
-                    .ClearAllExchanges()
-                    .AddDirectGlobPatternExchange("*")));
+                    .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageSender>();
+        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var settings = new DepositRewardByConditionSettings(
             1M,
@@ -71,9 +65,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         };
 
         // Act
-        var actual = await messageSender.RequestAsync<CampaignDetailRequest, CampaignDetailResponse>(subject, request);
+        var actual = await messageSender.RequestReplyAsync<CampaignDetailRequest, CampaignDetailResponse>(subject, request);
         var actualSettings = JsonSerializer.Deserialize<DepositRewardByConditionSettings>(
-            actual.CampaignDetail,
+            actual.Data.CampaignDetail,
             PromotionUtility.SerializerOptions);
 
         // Assert
@@ -104,15 +98,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeTimeProvider)
                     .AddSingleton(fakePlayerServiceClient)
                     .AddKeyedSingleton("Redis", fakeRedisDatabase)
-                    .AddMessageQueue()
-                    .AddDirectMessageQueue(directConfiguration => directConfiguration
-                        .AddProcessor(
-                            ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-                            subject))
-                    .ClearAllExchanges()
-                    .AddDirectGlobPatternExchange("*")));
+                    .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageSender>();
+        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -171,8 +159,8 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                 null,
                 null)));
         // Act
-        var response = await messageSender.RequestAsync<CheckPromotionRequest, ReadOnlyMemory<byte>>(subject, request);
-        var actual = CheckPromotionResponse.Parser.ParseFrom(response.Span);
+        var response = await messageSender.RequestReplyAsync<CheckPromotionRequest, ReadOnlyMemory<byte>>(subject, request);
+        var actual = CheckPromotionResponse.Parser.ParseFrom(response.Data.Span);
 
         // Assert
         Assert.True(actual.Result);
@@ -197,15 +185,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
                     .AddSingleton(fakeCheckService)
-                    .AddMessageQueue()
-                    .AddDirectMessageQueue(directConfiguration => directConfiguration
-                        .AddHandler(
-                            ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-                            subject))
-                    .ClearAllExchanges()
-                    .AddDirectGlobPatternExchange("*")));
+                    .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageSender>();
+        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -242,7 +224,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
             .Returns(currentTime);
 
         // Act
-        await messageSender.SendAsync(subject, request);
+        await messageSender.PublishAsync(subject, request);
 
         // Assert
         _ = fakeCheckService.Received(1)
@@ -275,15 +257,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
                     .AddSingleton(fakeCheckService)
-                    .AddMessageQueue()
-                    .AddDirectMessageQueue(directConfiguration => directConfiguration
-                        .AddHandler(
-                            ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-                            subject))
-                    .ClearAllExchanges()
-                    .AddDirectGlobPatternExchange("*")));
+                    .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageSender>();
+        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -320,7 +296,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
             .Returns(currentTime);
 
         // Act
-        await messageSender.SendAsync(subject, request);
+        await messageSender.PublishAsync(subject, request);
 
         // Assert
         _ = fakeCheckService.Received(1)
@@ -353,15 +329,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
                     .AddSingleton(fakeCheckService)
-                    .AddMessageQueue()
-                    .AddDirectMessageQueue(directConfiguration => directConfiguration
-                        .AddHandler(
-                            ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-                            subject))
-                    .ClearAllExchanges()
-                    .AddDirectGlobPatternExchange("*")));
+                    .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageSender>();
+        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -398,6 +368,6 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
             .Returns(currentTime);
 
         // Act
-        await messageSender.SendAsync(subject, request);
+        await messageSender.PublishAsync(subject, request);
     }
 }

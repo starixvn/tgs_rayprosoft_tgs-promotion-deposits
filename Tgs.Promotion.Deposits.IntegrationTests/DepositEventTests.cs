@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TGS.Core.Infrastructures.Nats.Interface;
 using Tgs.Payment.Clients;
 using Tgs.Payment.Protos;
 using Tgs.Promotion.Deposits.ApplicationServices;
@@ -28,15 +29,9 @@ public class DepositEventTests(ITestOutputHelper testOutputHelper)
                 .ConfigureServices(services => services
                     .AddSingleton(fakePaymentServiceClient)
                     .AddSingleton(fakeDistributeDepositBonusCommandService)
-                    .AddMessageQueue()
-                    .AddDirectMessageQueue(directConfiguration => directConfiguration
-                        .AddHandler(
-                            ProcessorTypes.DepositFormStatusChangedHandlerType,
-                            subject))
-                    .ClearAllExchanges()
-                    .AddDirectGlobPatternExchange("*")));
+                    .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageSender>();
+        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var depositFormId = Guid.NewGuid();
 

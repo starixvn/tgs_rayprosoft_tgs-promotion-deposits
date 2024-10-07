@@ -1,8 +1,9 @@
 ﻿using Google.Protobuf;
+using NATS.Client.Core;
 using Tgs.BrandCertificate.Clients;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Clients.Protos;
-using Valhalla.MessageQueue;
+using TGS.Core.Infrastructures.Nats.Interface;
 
 namespace Tgs.Promotion.Deposits.MessageQueue;
 
@@ -11,24 +12,21 @@ internal class DepositRewardByConditionFlowProcessor(
 	IBrandServiceClient brandServiceClient,
 	IDepositRewardByConditionCheckService depositRewardByConditionCheckService,
 	TimeProvider timeProvider)
-	: IMessageProcessor<CheckPromotionRequest, ReadOnlyMemory<byte>>
-	, IMessageHandler<CheckPromotionRequest>
+	: IMessageReplyHandler<CheckPromotionRequest, ReadOnlyMemory<byte>>
 {
 	private static readonly ReadOnlyMemory<byte> _EmptyResponse = Array.Empty<byte>();
 
-	public async ValueTask<ReadOnlyMemory<byte>> HandleAsync(
-		string subject,
-		CheckPromotionRequest data,
-		IEnumerable<MessageHeaderValue>? headerValues,
-		CancellationToken cancellationToken = default)
+	public async Task<ReadOnlyMemory<byte>> Handle(string subject, string? queueGroup, NatsHeaders? natsHeaders,
+		CheckPromotionRequest? message,
+		CancellationToken cancellationToken)
 	{
 		var action = subject.Split('.').Last();
 
-		if (data.PromotionId == null || data.PromotionId.ToGuid() == Guid.Empty)
+		if (message.PromotionId == null || message.PromotionId.ToGuid() == Guid.Empty)
 			return _EmptyResponse;
 
 		var promotionInfo = await promotionServiceClient.GetPromotionMainInfoAsync(
-			data.PromotionId.ToGuid(),
+			message.PromotionId.ToGuid(),
 			cancellationToken).ConfigureAwait(false);
 
 		var brandInfo = await brandServiceClient.GetBrandInfoAsync(
@@ -43,8 +41,8 @@ internal class DepositRewardByConditionFlowProcessor(
 				return new CheckPromotionResponse
 				{
 					Result = await depositRewardByConditionCheckService.CheckAsync(
-						data.PromotionId,
-						data.PlayerCode,
+						message.PromotionId,
+						message.PlayerCode,
 						currentDate,
 						cancellationToken).ConfigureAwait(false)
 				}.ToByteArray();
@@ -54,16 +52,16 @@ internal class DepositRewardByConditionFlowProcessor(
 
 			case "rollback":
 				await depositRewardByConditionCheckService.RollbackTagAsync(
-					data.PromotionId,
-					data.PlayerCode,
+					message.PromotionId,
+					message.PlayerCode,
 					currentDate,
 					cancellationToken).ConfigureAwait(false);
 				return _EmptyResponse;
 
 			case "tag":
 				await depositRewardByConditionCheckService.TagDepositAsync(
-					data.PromotionId,
-					data.PlayerCode,
+					message.PromotionId,
+					message.PlayerCode,
 					currentDate,
 					cancellationToken).ConfigureAwait(false);
 				return _EmptyResponse;
@@ -71,15 +69,4 @@ internal class DepositRewardByConditionFlowProcessor(
 
 		return _EmptyResponse;
 	}
-
-	async ValueTask IMessageHandler<CheckPromotionRequest>.HandleAsync(
-		string subject,
-		CheckPromotionRequest data,
-		IEnumerable<MessageHeaderValue>? headerValues,
-		CancellationToken cancellationToken)
-		=> await HandleAsync(
-			subject,
-			data,
-			headerValues,
-			cancellationToken).ConfigureAwait(false);
 }

@@ -27,7 +27,7 @@ public class DepositRewardByConditionSettingProcessorTests
         };
 
         // Act
-        var actual = await sut.HandleAsync("test", request, null);
+        var actual = await sut.Handle("test", "test", null, request, default);
 
         // Assert
         Assert.NotNull(actual);
@@ -53,7 +53,7 @@ public class DepositRewardByConditionSettingProcessorTests
         };
 
         // Act
-        _ = await sut.HandleAsync("test", request, null);
+        _ = await sut.Handle("test", "test", null, request, default);
 
         // Assert
         _ = fakeCalculateClient.Received(1)
@@ -85,7 +85,7 @@ public class DepositRewardByConditionSettingProcessorTests
             .Returns(Guid.NewGuid());
 
         // Act
-        _ = await sut.HandleAsync("test", request, null);
+        _ = await sut.Handle("test", "test", null, request, default);
 
         // Assert
         _ = fakeCalculateClient.Received(0)

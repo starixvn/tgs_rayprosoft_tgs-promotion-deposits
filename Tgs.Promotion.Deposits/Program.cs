@@ -1,9 +1,8 @@
 ﻿using FluentdForward.OpenTelemetry.MessagePack;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using NATS.Client.Core;
+using NATS.Client.Serializers.Json;
 using Npgsql;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Instrumentation.AspNetCore;
@@ -11,10 +10,13 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
-using Tgs.MessageQueue.Nats.Serializers;
 using Tgs.Promotion;
+using Tgs.Promotion.Clients.Protos;
 using Tgs.Promotion.Deposits;
 using Tgs.Promotion.Deposits.MessageQueue;
+using TGS.Core.Infrastructures.Nats;
+using Tgs.MessageQueue.Nats.Serializers;
+using Tgs.Payment.Protos;
 
 var builder = WebApplication.CreateBuilder(args);
 {
@@ -76,53 +78,46 @@ var builder = WebApplication.CreateBuilder(args);
 				.UseNpgsql("name=Tgs"),
 			sp => sp.GetRequiredKeyedService<IDatabase>("Redis"));
 
-	builder.Services
-		.AddKeyedSingleton(
-			"Nats",
-			(sp, _) => new NatsConnection(NatsOpts.Default with
-			{
-				Url = builder.Configuration.GetConnectionString("Nats")!,
-				SerializerRegistry = TgsNatsSerializerRegistration.Default
-			}))
-		.AddMessageQueue()
-		.AddNatsMessageQueue(natsConfiguration => natsConfiguration
-			.ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
-			.AddProcessor(
-				ProcessorTypes.DepositRewardByConditionSettingProcessorType,
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting",
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting")
-			.AddProcessor(
-				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-				string.Format(
-					PromotionCheckConsts.CheckSubjectTemplate,
-					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.check")
-			.AddReplyHandler(
-				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-				string.Format(
-					PromotionCheckConsts.TagSubjectTemplate,
-					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.tag")
-			.AddReplyHandler(
-				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-				string.Format(
-					PromotionCheckConsts.CommitSubjectTemplate,
-					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.commit")
-			.AddReplyHandler(
-				ProcessorTypes.DepositRewardByConditionFlowProcessorType,
-				string.Format(
-					PromotionCheckConsts.RollbackSubjectTemplate,
-					DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.rollback")
-			.AddHandler(
-				ProcessorTypes.DepositFormStatusChangedHandlerType,
-				"tgs.payment.deposit.status_ex",
-				$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.deposit")
-)
-		.AddNatsGlobPatternExchange("*");
+	builder.Services.AddNatsMessage(builder.Configuration.GetConnectionString("Nats")!,
+			TgsNatsSerializerRegistration.Default)
+		.RequestReplyRegister<CampaignDetailRequest, CampaignDetailResponse>(
+			ProcessorTypes.DepositRewardByConditionSettingProcessorType,
+			$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting",
+			$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting")
+		.RequestReplyRegister(typeof(DetailReplyProcessor),
+			string.Format(PromotionDetailConst.DetailSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+			string.Format(PromotionDetailConst.DetailSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+			NatsJsonSerializerRegistry.Default.GetDeserializer<DistributedDetailRequest>(),
+			NatsJsonSerializerRegistry.Default.GetSerializer<DistributedDetailResponse>())
+		.RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(
+			ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+			string.Format(PromotionCheckConsts.CheckSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+			string.Format(PromotionCheckConsts.CheckSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()))
+		.RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(
+			ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+			string.Format(PromotionCheckConsts.TagSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+			string.Format(PromotionCheckConsts.TagSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()))
+		.RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(
+			ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+			string.Format(PromotionCheckConsts.RollbackSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+			string.Format(PromotionCheckConsts.RollbackSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()))
+		.RequestReplyRegister<CheckPromotionRequest, ReadOnlyMemory<byte>>(
+			ProcessorTypes.DepositRewardByConditionFlowProcessorType,
+			string.Format(PromotionCheckConsts.CommitSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()),
+			string.Format(PromotionCheckConsts.CommitSubjectTemplate,
+				DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()))
+		.SubscribeRegister<FormEventEx>(ProcessorTypes.DepositFormStatusChangedHandlerType, "tgs.payment.deposit.status_ex",
+			$"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.deposit");
 
-	var instrumentationExtenionFilters = new[] { "html", "ico", "png", "jpg" };
 	_ = builder.Services
 		.AddHealthChecks()
 		.Services
