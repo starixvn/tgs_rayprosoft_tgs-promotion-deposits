@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TGS.Core.Infrastructures.Nats.Interface;
 using Tgs.Payment.Clients;
 using Tgs.Payment.Protos;
 using Tgs.Promotion.Deposits.ApplicationServices;
 using Tgs.Promotion.Deposits.MessageQueue;
 using Tgs.ServiceUtility;
-using Valhalla.MessageQueue;
 using Xunit.Abstractions;
 
 namespace Tgs.Promotion.Deposits.IntegrationTests;
@@ -31,8 +29,6 @@ public class DepositEventTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeDistributeDepositBonusCommandService)
                     .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageManager>();
-
         var depositFormId = Guid.NewGuid();
 
         var request = new FormEventEx
@@ -54,8 +50,10 @@ public class DepositEventTests(ITestOutputHelper testOutputHelper)
             Arg.Any<CancellationToken>())
             .Returns(depositFormInfo);
 
+        var sut = new DepositFormStatusChangedHandler(fakePaymentServiceClient,
+            fakeDistributeDepositBonusCommandService);
         // Act
-        await messageSender.PublishAsync(subject, request);
+        await sut.Handle(subject, subject, null, request);
 
         // Assert
         _ = fakeDistributeDepositBonusCommandService.Received(1)

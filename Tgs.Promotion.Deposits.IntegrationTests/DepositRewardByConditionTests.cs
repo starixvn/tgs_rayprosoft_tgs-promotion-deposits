@@ -3,14 +3,15 @@ using ExpectedObjects;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using StackExchange.Redis;
 using Tgs.BrandCertificate.Clients;
 using Tgs.Calculate.Clients;
 using Tgs.PlayerService.Client;
 using Tgs.Promotion.Clients;
 using Tgs.Promotion.Clients.Protos;
+using Tgs.Promotion.Deposits.MessageQueue;
 using TGS.Core.Infrastructures.Nats.Interface;
-using Valhalla.MessageQueue;
 using Xunit.Abstractions;
 
 namespace Tgs.Promotion.Deposits.IntegrationTests;
@@ -24,15 +25,15 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         var subject = $"tgs.promotion.{DepositPromotionConsts.DepositRewardByConditionTypeName.ToLowerInvariant()}.setting";
 
         var fakeCalculateService = Substitute.For<ICalculateClient>();
+        var fakeTgsRepository = Substitute.For<ITgsRepository>();
 
         await using var web = PromotionDepositsTestApplication.Instance
             .WithWebHostBuilder(hostBuilder => hostBuilder
                 .ConfigureLogging(logging => logging.AddXUnit(testOutputHelper))
                 .ConfigureServices(services => services
                     .AddSingleton(fakeCalculateService)
+                    .AddSingleton(fakeTgsRepository)
                     .AddFakeNatsMessageQueue()));
-
-        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var settings = new DepositRewardByConditionSettings(
             1M,
@@ -64,10 +65,13 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
             """
         };
 
+        var sut = new DepositRewardByConditionSettingProcessor(fakeTgsRepository, fakeCalculateService,
+            NullLogger<DepositRewardByConditionSettingProcessor>.Instance);
+
         // Act
-        var actual = await messageSender.RequestReplyAsync<CampaignDetailRequest, CampaignDetailResponse>(subject, request);
+        var actual = await sut.Handle(subject, subject, null, request, default);
         var actualSettings = JsonSerializer.Deserialize<DepositRewardByConditionSettings>(
-            actual.Data.CampaignDetail,
+            actual.CampaignDetail,
             PromotionUtility.SerializerOptions);
 
         // Assert
@@ -88,6 +92,7 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         var fakeTimeProvider = Substitute.For<TimeProvider>();
         var fakeRedisDatabase = Substitute.For<IDatabase>();
         var fakePlayerServiceClient = Substitute.For<IPlayerServiceClient>();
+        var fakeDepositRewardByConditionCheckService = Substitute.For<IDepositRewardByConditionCheckService>();
 
         await using var web = PromotionDepositsTestApplication.Instance
             .WithWebHostBuilder(hostBuilder => hostBuilder
@@ -97,10 +102,9 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeBrandServiceClient)
                     .AddSingleton(fakeTimeProvider)
                     .AddSingleton(fakePlayerServiceClient)
+                    .AddSingleton(fakeDepositRewardByConditionCheckService)
                     .AddKeyedSingleton("Redis", fakeRedisDatabase)
                     .AddFakeNatsMessageQueue()));
-
-        var messageSender = web.Services.GetRequiredService<IMessageManager>();
 
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
@@ -158,9 +162,15 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                 null,
                 null,
                 null)));
+
+        fakeDepositRewardByConditionCheckService.CheckAsync(Arg.Any<Guid>(), Arg.Any<string>(),
+            Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(true);
+
+        var sut = new DepositRewardByConditionFlowProcessor(fakePromotionServiceClient, fakeBrandServiceClient,
+            fakeDepositRewardByConditionCheckService, fakeTimeProvider);
         // Act
-        var response = await messageSender.RequestReplyAsync<CheckPromotionRequest, ReadOnlyMemory<byte>>(subject, request);
-        var actual = CheckPromotionResponse.Parser.ParseFrom(response.Data.Span);
+        var response = await sut.Handle(subject, subject, null, request, default);
+        var actual = CheckPromotionResponse.Parser.ParseFrom(response.Span);
 
         // Assert
         Assert.True(actual.Result);
@@ -223,7 +233,10 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         _ = fakeTimeProvider.GetUtcNow()
             .Returns(currentTime);
 
+        var sut = new DepositRewardByConditionFlowProcessor(fakePromotionServiceClient, fakeBrandServiceClient,
+            fakeCheckService, fakeTimeProvider);
         // Act
+        var response = await sut.Handle(subject, subject, null, request, default);
         await messageSender.PublishAsync(subject, request);
 
         // Assert
@@ -259,8 +272,6 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeCheckService)
                     .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageManager>();
-
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
         var currentTime = DateTimeOffset.ParseExact(
@@ -295,8 +306,10 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         _ = fakeTimeProvider.GetUtcNow()
             .Returns(currentTime);
 
+        var sut = new DepositRewardByConditionFlowProcessor(fakePromotionServiceClient, fakeBrandServiceClient,
+            fakeCheckService, fakeTimeProvider);
         // Act
-        await messageSender.PublishAsync(subject, request);
+        var response = await sut.Handle(subject, subject, null, request, default);
 
         // Assert
         _ = fakeCheckService.Received(1)
@@ -331,8 +344,6 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
                     .AddSingleton(fakeCheckService)
                     .AddFakeNatsMessageQueue()));
 
-        var messageSender = web.Services.GetRequiredService<IMessageManager>();
-
         var promotionId = Guid.NewGuid();
         var brandId = Guid.NewGuid();
         var currentTime = DateTimeOffset.ParseExact(
@@ -367,7 +378,13 @@ public class DepositRewardByConditionTests(ITestOutputHelper testOutputHelper)
         _ = fakeTimeProvider.GetUtcNow()
             .Returns(currentTime);
 
+        var sut = new DepositRewardByConditionFlowProcessor(fakePromotionServiceClient, fakeBrandServiceClient,
+            fakeCheckService, fakeTimeProvider);
         // Act
-        await messageSender.PublishAsync(subject, request);
+        var response = await sut.Handle(subject, subject, null, request, default);
+
+        _ = fakeCheckService.ReceivedWithAnyArgs(0).CheckAsync(default, null, default, default);
+        _ = fakeCheckService.ReceivedWithAnyArgs(0).TagDepositAsync(default, null, default, default);
+        _ = fakeCheckService.ReceivedWithAnyArgs(0).RollbackTagAsync(default, null, default, default);
     }
 }
